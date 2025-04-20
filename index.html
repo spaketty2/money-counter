@@ -114,10 +114,11 @@
       position: fixed;
       bottom: 0;
       right: 0;
-      width: 50%;
+      width: 60%; /* เพิ่มขึ้น 20% จากเดิม */
       height: auto;
       z-index: 9999;
       background: transparent;
+      display: none; /* ซ่อนทั้ง container ถ้า numpad ไม่โชว์ */
     }
     #numpad-display {
       text-align: right;
@@ -132,7 +133,7 @@
       display: none;
       padding: 10px;
       box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
-      border-top-left-radius: 12px;
+      border-top-left-radius: 0; /* เปลี่ยนเป็นเหลี่ยม */
     }
     .numpad-row {
       display: flex;
@@ -225,8 +226,8 @@
     const frame = document.getElementById("frame");
     const row = document.createElement("div");
     row.className = "row";
-    row.innerHTML = `
-      <div class="multiply" id="${key}_mul">0</div>
+    row.innerHTML =
+      `<div class="multiply" id="${key}_mul">0</div>
       <button onclick="clearValue('${key}')">C</button>
       <button onclick="changeValue('${key}', -1)">-1</button>
       <div class="label">${label}</div>
@@ -235,8 +236,7 @@
              oninput="onValueChange(this, '${key}')" 
              onkeypress="return isNumberKey(event)">
       <button onclick="changeValue('${key}', 1)">+1</button>
-      <button onclick="changeValue('${key}', 10)">+10</button>
-    `;
+      <button onclick="changeValue('${key}', 10)">+10</button>`;
     frame.appendChild(row);
   }
 
@@ -273,6 +273,7 @@
     for (let k in prices) clearValue(k);
     document.getElementById("transfer").value = '0';
     document.getElementById("numpad-display").innerText = '0';
+    hideNumpad();
     updateFeeAndDiff();
   }
 
@@ -312,11 +313,13 @@
 
   function showNumpad() {
     document.getElementById('numpad').style.display = 'block';
+    document.getElementById('numpad-container').style.display = 'block';
     document.getElementById('numpad-display').innerText = document.getElementById('transfer').value;
   }
 
   function hideNumpad() {
     document.getElementById('numpad').style.display = 'none';
+    document.getElementById('numpad-container').style.display = 'none';
     updateFeeAndDiff();
   }
 
