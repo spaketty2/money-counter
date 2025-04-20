@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>นับเงิน + คีย์บอร์ดเสมือน</title>
   <style>
-    * {
-      user-select: none;
-      -webkit-user-select: none;
-      -ms-user-select: none;
-    }
+    * { user-select: none; -webkit-user-select: none; -ms-user-select: none; }
     html, body {
       height: 100%;
       margin: 0;
@@ -25,10 +21,7 @@
       flex-direction: column;
       justify-content: flex-start;
     }
-    #frame {
-      flex: 1 1 auto;
-      overflow-y: auto;
-    }
+    #frame { flex: 1 1 auto; overflow-y: auto; }
     .row {
       display: flex;
       flex-wrap: wrap;
@@ -46,9 +39,7 @@
       cursor: pointer;
       width: 38px;
     }
-    button:active {
-      background: #00aaff;
-    }
+    button:active { background: #00aaff; }
     input[type="text"] {
       background: #5c5c5c;
       color: #ffffff;
@@ -60,11 +51,7 @@
       margin: 1px;
       width: 46px;
     }
-    .label {
-      flex: 0 0 36px;
-      text-align: center;
-      font-size: 12px;
-    }
+    .label { flex: 0 0 36px; text-align: center; font-size: 12px; }
     .multiply {
       flex: 1;
       text-align: right;
@@ -77,15 +64,7 @@
       justify-content: flex-end;
       margin: 8px 0;
     }
-    .sum-section {
-      display: flex;
-      justify-content: space-between;
-      font-weight: bold;
-      font-size: 14px;
-      margin: 6px 0;
-      flex-wrap: wrap;
-    }
-    .floating-label {
+    .sum-section, .floating-label {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -114,11 +93,11 @@
       position: fixed;
       bottom: 0;
       right: 0;
-      width: 60%; /* เพิ่มขึ้น 20% จากเดิม */
+      width: 60%;
       height: auto;
       z-index: 9999;
       background: transparent;
-      display: none; /* ซ่อนทั้ง container ถ้า numpad ไม่โชว์ */
+      display: none;
     }
     #numpad-display {
       text-align: right;
@@ -133,7 +112,6 @@
       display: none;
       padding: 10px;
       box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
-      border-top-left-radius: 0; /* เปลี่ยนเป็นเหลี่ยม */
     }
     .numpad-row {
       display: flex;
@@ -151,9 +129,7 @@
       color: #fff;
       cursor: pointer;
     }
-    .numpad-btn:active {
-      background: #00aaff;
-    }
+    .numpad-btn:active { background: #00aaff; }
   </style>
 </head>
 <body>
@@ -171,8 +147,7 @@
 
 <div class="floating-label">
   <div>ยอดโอน</div>
-  <input type="text" id="transfer" value="0"
-         onfocus="showNumpad()" readonly>
+  <input type="text" id="transfer" value="0" onfocus="showNumpad()" readonly>
 </div>
 
 <div class="sum-section">
@@ -187,7 +162,6 @@
 
 <div style="margin-bottom: 80px"></div>
 
-<!-- NUMPAD CONTAINER -->
 <div id="numpad-container">
   <div id="numpad-display">0</div>
   <div id="numpad">
@@ -222,6 +196,12 @@
   const values = {};
   for (let k in prices) values[k] = 0;
 
+  const labels = {
+    bn1000: '1000', bn500: '500', bn100: '100', bn50: '50', bn20: '20',
+    c10: '10', c5: '5', c2: '2', c1: '1', p100: '100', n: '...'
+  };
+  for (let k in labels) createRow(k, labels[k]);
+
   function createRow(key, label) {
     const frame = document.getElementById("frame");
     const row = document.createElement("div");
@@ -249,12 +229,14 @@
     values[key] = Math.max(values[key] + delta, 0);
     document.getElementById(key).value = values[key];
     updateMultiply(key);
+    saveToLocalStorage();
   }
 
   function clearValue(key) {
     values[key] = 0;
     document.getElementById(key).value = 0;
     updateMultiply(key);
+    saveToLocalStorage();
   }
 
   function updateMultiply(key) {
@@ -269,12 +251,22 @@
     updateFeeAndDiff();
   }
 
+  function updateFeeAndDiff() {
+    let transfer = parseInt(document.getElementById("transfer").value.replace(/,/g, "")) || 0;
+    let fee = transfer + 15;
+    document.getElementById("total-fee").innerText = fee.toLocaleString();
+    let total = parseInt(document.getElementById("total-sum").innerText.replace(/,/g, "")) || 0;
+    let diff = total - fee;
+    document.getElementById("total-diff").innerText = diff.toLocaleString();
+  }
+
   function clearAll() {
     for (let k in prices) clearValue(k);
     document.getElementById("transfer").value = '0';
     document.getElementById("numpad-display").innerText = '0';
     hideNumpad();
     updateFeeAndDiff();
+    saveToLocalStorage();
   }
 
   function onFocusIn(input) {
@@ -289,27 +281,14 @@
     }
     values[key] = parseInt(input.value) || 0;
     updateMultiply(key);
+    saveToLocalStorage();
   }
 
   function onValueChange(input, key) {
     values[key] = Math.max(parseInt(input.value) || 0, 0);
     updateMultiply(key);
+    saveToLocalStorage();
   }
-
-  function updateFeeAndDiff() {
-    let transfer = parseInt(document.getElementById("transfer").value.replace(/,/g, "")) || 0;
-    let fee = transfer + 15;
-    document.getElementById("total-fee").innerText = fee.toLocaleString();
-    let total = parseInt(document.getElementById("total-sum").innerText.replace(/,/g, "")) || 0;
-    let diff = total - fee;
-    document.getElementById("total-diff").innerText = diff.toLocaleString();
-  }
-
-  const labels = {
-    bn1000: '1000', bn500: '500', bn100: '100', bn50: '50', bn20: '20',
-    c10: '10', c5: '5', c2: '2', c1: '1', p100: '100', n: '...'
-  };
-  for (let k in labels) createRow(k, labels[k]);
 
   function showNumpad() {
     document.getElementById('numpad').style.display = 'block';
@@ -329,6 +308,7 @@
     if (current === '0') current = '';
     input.value = formatNumber(current + num);
     document.getElementById('numpad-display').innerText = input.value;
+    saveToLocalStorage();
   }
 
   function deleteLastChar() {
@@ -337,12 +317,47 @@
     current = current.slice(0, -1);
     input.value = formatNumber(current || '0');
     document.getElementById('numpad-display').innerText = input.value;
+    saveToLocalStorage();
   }
 
   function formatNumber(val) {
     let num = parseInt(val);
     return isNaN(num) ? '0' : num.toLocaleString();
   }
+
+  function saveToLocalStorage() {
+    localStorage.setItem("values", JSON.stringify(values));
+    localStorage.setItem("transfer", document.getElementById("transfer").value);
+  }
+
+  function loadFromLocalStorage() {
+    const storedValues = localStorage.getItem("values");
+    const storedTransfer = localStorage.getItem("transfer");
+    if (storedValues) {
+      const parsed = JSON.parse(storedValues);
+      for (let k in parsed) {
+        values[k] = parsed[k];
+        const el = document.getElementById(k);
+        if (el) {
+          el.value = parsed[k];
+          updateMultiply(k);
+        }
+      }
+    }
+    if (storedTransfer) {
+      document.getElementById("transfer").value = storedTransfer;
+      updateFeeAndDiff();
+    }
+  }
+
+  window.onload = function () {
+    loadFromLocalStorage();
+  };
+
+  document.addEventListener("click", function (e) {
+    const isClickInside = e.target.closest("#numpad-container") || e.target.closest("#transfer");
+    if (!isClickInside) hideNumpad();
+  });
 </script>
 
 </body>
