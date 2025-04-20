@@ -353,6 +353,18 @@
   window.onload = function () {
     loadFromLocalStorage();
   };
+
+  // 👉 เพิ่มฟังก์ชันนี้เพื่อซ่อนคีย์บอร์ดเมื่อแตะที่อื่น
+  document.addEventListener("click", function (event) {
+    const numpadContainer = document.getElementById("numpad-container");
+    const transferInput = document.getElementById("transfer");
+    if (
+      !numpadContainer.contains(event.target) &&
+      event.target !== transferInput
+    ) {
+      hideNumpad();
+    }
+  });
 </script>
 
 </body>
