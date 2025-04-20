@@ -1,115 +1,113 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<title>นับเงิน</title>
-<style>
-  body {
-    background: #3a3a3a;
-    color: #ffffff;
-    font-family: Tahoma, sans-serif;
-    margin: 0;
-    padding: 10px;
-    max-width: 720px;
-    margin: auto;
-  }
-  .row {
-    display: flex;
-    align-items: center;
-    margin: 4px 0;
-    flex-wrap: wrap;
-  }
-  button {
-    background: #4c4c4c;
-    color: #ffffff;
-    border: none;
-    padding: 6px 0;
-    margin: 2px;
-    font-size: 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 50px;
-    transition: background 0.15s ease;
-  }
-  button:active {
-    background: #00aaff;
-  }
-  input[type="text"] {
-    background: #5c5c5c;
-    color: #ffffff;
-    border: none;
-    text-align: center;
-    font-size: 14px;
-    padding: 6px;
-    border-radius: 4px;
-    margin: 2px;
-    width: 60px;
-    transition: background 0.15s ease;
-  }
-  .label {
-    flex: 0 0 50px;
-    text-align: center;
-    font-size: 14px;
-  }
-  .multiply {
-    flex: 1;
-    text-align: right;
-    font-size: 14px;
-    padding-right: 10px;
-    min-width: 50px;
-  }
-  .clear-btn {
-    display: flex;
-    justify-content: flex-end;
-    margin: 12px 0;
-  }
-  .sum-section {
-    display: flex;
-    justify-content: flex-end;
-    font-weight: bold;
-    font-size: 16px;
-    margin: 8px 0;
-    flex-wrap: wrap;
-  }
-  .sum-section div {
-    margin-left: 10px;
-  }
-  .floating-label {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    font-weight: bold;
-    font-size: 16px;
-    margin: 8px 0;
-    flex-wrap: wrap;
-  }
-  .floating-label div {
-    margin-left: 10px;
-  }
-  .floating-label input {
-    width: 140px;
-    font-size: 16px;
-    text-align: right;
-    padding: 6px;
-    background: #5c5c5c;
-    color: #ffffff;
-    border: none;
-    border-radius: 4px;
-    margin-left: 10px;
-  }
-  .green {
-    color: #00ff88;
-    min-width: 80px;
-    text-align: right;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>นับเงิน</title>
+  <style>
+    body {
+      background: #3a3a3a;
+      color: #ffffff;
+      font-family: Tahoma, sans-serif;
+      margin: 0;
+      padding: 10px;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 4px 0;
+    }
+    button {
+      background: #4c4c4c;
+      color: #ffffff;
+      border: none;
+      padding: 6px 0;
+      margin: 2px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 42px;
+      transition: background 0.15s ease;
+    }
+    button:active {
+      background: #00aaff;
+    }
+    input[type="text"] {
+      background: #5c5c5c;
+      color: #ffffff;
+      border: none;
+      text-align: center;
+      font-size: 14px;
+      padding: 6px;
+      border-radius: 4px;
+      margin: 2px;
+      width: 50px;
+      transition: background 0.15s ease;
+    }
+    .label {
+      flex: 0 0 40px;
+      text-align: center;
+      font-size: 14px;
+    }
+    .multiply {
+      flex: 1;
+      text-align: right;
+      font-size: 14px;
+      padding-right: 10px;
+      min-width: 50px;
+    }
+    .clear-btn {
+      display: flex;
+      justify-content: flex-end;
+      margin: 12px 0;
+    }
+    .sum-section {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      font-size: 16px;
+      margin: 8px 0;
+      flex-wrap: wrap;
+    }
+    .sum-section div {
+      margin: 4px 0;
+    }
+    .floating-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 16px;
+      margin: 8px 0;
+      flex-wrap: wrap;
+    }
+    .floating-label input {
+      width: 120px;
+      font-size: 16px;
+      text-align: right;
+      padding: 6px;
+      background: #5c5c5c;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      margin-left: 10px;
+    }
+    .green {
+      color: #00ff88;
+      min-width: 80px;
+      text-align: right;
+    }
+  </style>
 </head>
 <body>
 
 <div id="frame"></div>
 
 <div class="clear-btn">
-  <button onclick="clearAll()" style="width: 120px;">Clear</button>
+  <button onclick="clearAll()" style="width: 100%;">Clear</button>
 </div>
 
 <div class="sum-section">
@@ -147,7 +145,6 @@
     const frame = document.getElementById("frame");
     const row = document.createElement("div");
     row.className = "row";
-
     row.innerHTML = `
       <button onclick="clearValue('${key}')">C</button>
       <button onclick="changeValue('${key}', -1)">-1</button>
