@@ -39,7 +39,7 @@
       background: #4c4c4c;
       color: #ffffff;
       border: none;
-      padding: 10px 0; /* เพิ่มความสูง */
+      padding: 10px 0;
       margin: 1px;
       font-size: 12px;
       border-radius: 4px;
@@ -55,7 +55,7 @@
       border: none;
       text-align: center;
       font-size: 12px;
-      padding: 10px; /* เพิ่มความสูง */
+      padding: 10px;
       border-radius: 4px;
       margin: 1px;
       width: 46px;
@@ -130,10 +130,11 @@
 
 <div class="floating-label">
   <div>ยอดโอน</div>
-  <input type="text" id="transfer" value="0" 
+  <input type="text" id="transfer" value="0" inputmode="numeric"
          onfocus="onFocusIn(this)" 
          onblur="onTransferOut(this)" 
-         oninput="onTransferChange()">
+         oninput="onTransferChange()" 
+         onkeypress="return isNumberKey(event)">
 </div>
 
 <div class="sum-section">
@@ -146,9 +147,7 @@
   <div id="total-diff" class="green">0</div>
 </div>
 
-<div>
-  <div style="margin-bottom: 60px"></div>
-</div>
+<div><div style="margin-bottom: 60px"></div></div>
 
 <script>
   const prices = {
@@ -166,14 +165,20 @@
       <button onclick="clearValue('${key}')">C</button>
       <button onclick="changeValue('${key}', -1)">-1</button>
       <div class="label">${label}</div>
-      <input type="text" id="${key}" value="0"
+      <input type="text" id="${key}" value="0" inputmode="numeric"
              onfocus="onFocusIn(this)" onblur="onFocusOut(this, '${key}')"
-             oninput="onValueChange(this, '${key}')">
+             oninput="onValueChange(this, '${key}')" 
+             onkeypress="return isNumberKey(event)">
       <button onclick="changeValue('${key}', 1)">+1</button>
       <button onclick="changeValue('${key}', 10)">+10</button>
       <div class="multiply" id="${key}_mul">0</div>
     `;
     frame.appendChild(row);
+  }
+
+  function isNumberKey(evt) {
+    const charCode = evt.which ? evt.which : evt.keyCode;
+    return charCode >= 48 && charCode <= 57; // ตัวเลข 0-9
   }
 
   function changeValue(key, delta) {
