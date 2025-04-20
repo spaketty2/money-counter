@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>นับเงิน WebApp</title>
+  <style>
+    body {
+      background: #3a3a3a;
+      color: #ffffff;
+      font-family: Helvetica, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #00ff88;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      margin: 6px 0;
+    }
+    .row label {
+      flex: 1;
+    }
+    .row input {
+      width: 60px;
+      text-align: center;
+      margin: 0 5px;
+      padding: 4px;
+      background: #5c5c5c;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+    }
+    .total {
+      font-weight: bold;
+      text-align: right;
+      font-size: 1.5em;
+      color: #00ff88;
+      margin-top: 20px;
+    }
+    .button {
+      padding: 8px 16px;
+      background: #4c4c4c;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>นับเงิน</h1>
+
+<div id="moneyForm"></div>
+
+<div class="total">รวม: <span id="total">0</span> บาท</div>
+
+<script>
+  const items = [
+    { name: '1000', value: 1000 },
+    { name: '500',  value: 500 },
+    { name: '100',  value: 100 },
+    { name: '50',   value: 50 },
+    { name: '20',   value: 20 },
+    { name: '10',   value: 10 },
+    { name: '5',    value: 5 },
+    { name: '2',    value: 2 },
+    { name: '1',    value: 1 }
+  ];
+
+  function updateTotal() {
+    let total = 0;
+    items.forEach(item => {
+      const count = parseInt(document.getElementById(item.name).value) || 0;
+      total += count * item.value;
+    });
+    document.getElementById('total').textContent = total.toLocaleString();
+  }
+
+  const form = document.getElementById('moneyForm');
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const label = document.createElement('label');
+    label.textContent = `${item.name} บาท`;
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = 0;
+    input.value = 0;
+    input.id = item.name;
+    input.oninput = updateTotal;
+
+    row.appendChild(label);
+    row.appendChild(input);
+    form.appendChild(row);
+  });
+</script>
+
+</body>
+</html>
