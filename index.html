@@ -162,6 +162,7 @@
     const row = document.createElement("div");
     row.className = "row";
     row.innerHTML = `
+      <div class="multiply" id="${key}_mul">0</div>
       <button onclick="clearValue('${key}')">C</button>
       <button onclick="changeValue('${key}', -1)">-1</button>
       <div class="label">${label}</div>
@@ -171,14 +172,13 @@
              onkeypress="return isNumberKey(event)">
       <button onclick="changeValue('${key}', 1)">+1</button>
       <button onclick="changeValue('${key}', 10)">+10</button>
-      <div class="multiply" id="${key}_mul">0</div>
     `;
     frame.appendChild(row);
   }
 
   function isNumberKey(evt) {
     const charCode = evt.which ? evt.which : evt.keyCode;
-    return charCode >= 48 && charCode <= 57; // ตัวเลข 0-9
+    return charCode >= 48 && charCode <= 57;
   }
 
   function changeValue(key, delta) {
