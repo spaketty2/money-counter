@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>นับเงิน + คีย์บอร์ดเสมือน</title>
   <style>
+    /* [คงเดิม] ... */
     * { user-select: none; -webkit-user-select: none; -ms-user-select: none; }
     html, body {
       height: 100%;
@@ -61,7 +62,8 @@
     }
     .clear-btn {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: center;
       margin: 8px 0;
     }
     .sum-section, .floating-label {
@@ -130,6 +132,16 @@
       cursor: pointer;
     }
     .numpad-btn:active { background: #00aaff; }
+
+    /* ปุ่มล็อค */
+    #lock-btn {
+      font-size: 13px;
+      height: 34px;
+      width: 45px;
+      margin-left: 1px;
+    }
+    .locked { color: yellow; }
+    .unlocked { color: white; }
   </style>
 </head>
 <body>
@@ -137,7 +149,8 @@
 <div id="frame"></div>
 
 <div class="clear-btn">
-  <button onclick="clearAll()" style="width: 100%;">Clear</button>
+  <button style="width: 100%" onclick="clearAll()">Clear</button>
+  <button id="lock-btn" class="unlocked" onclick="toggleLock()">🔓</button>
 </div>
 
 <div class="sum-section">
@@ -189,6 +202,8 @@
 </div>
 
 <script>
+  let isLocked = false;
+
   const prices = {
     bn1000: 1000, bn500: 500, bn100: 100, bn50: 50, bn20: 20,
     c10: 10, c5: 5, c2: 2, c1: 1, p100: 100, n: 1
@@ -196,25 +211,39 @@
   const values = {};
   for (let k in prices) values[k] = 0;
 
+  function lockCheck(callback) {
+    return function (...args) {
+      if (!isLocked) callback(...args);
+    }
+  }
+
   function createRow(key, label) {
     const frame = document.getElementById("frame");
     const row = document.createElement("div");
     row.className = "row";
     row.innerHTML =
       `<div class="multiply" id="${key}_mul">0</div>
-      <button onclick="clearValue('${key}')">C</button>
-      <button onclick="changeValue('${key}', -1)">-1</button>
+      <button onclick="lockCheck(clearValue)('${key}')">C</button>
+      <button onclick="lockCheck(changeValue)('${key}', -1)">-1</button>
       <div class="label">${label}</div>
       <input type="text" id="${key}" value="0" inputmode="numeric"
-             onfocus="onFocusIn(this)" onblur="onFocusOut(this, '${key}')"
-             oninput="onValueChange(this, '${key}')" 
+             onfocus="lockCheck(onFocusIn)(this)" onblur="lockCheck(onFocusOut)(this, '${key}')"
+             oninput="lockCheck(onValueChange)(this, '${key}')" 
              onkeypress="return isNumberKey(event)">
-      <button onclick="changeValue('${key}', 1)">+1</button>
-      <button onclick="changeValue('${key}', 10)">+10</button>`;
+      <button onclick="lockCheck(changeValue)('${key}', 1)">+1</button>
+      <button onclick="lockCheck(changeValue)('${key}', 10)">+10</button>`;
     frame.appendChild(row);
   }
 
+  function toggleLock() {
+    isLocked = !isLocked;
+    const lockBtn = document.getElementById("lock-btn");
+    lockBtn.innerText = isLocked ? '🔒' : '🔓';
+    lockBtn.className = isLocked ? 'locked' : 'unlocked';
+  }
+
   function isNumberKey(evt) {
+    if (isLocked) return false;
     const charCode = evt.which ? evt.which : evt.keyCode;
     return charCode >= 48 && charCode <= 57;
   }
@@ -246,6 +275,7 @@
   }
 
   function clearAll() {
+    if (isLocked) return;
     for (let k in prices) clearValue(k);
     document.getElementById("transfer").value = '0';
     document.getElementById("numpad-display").innerText = '0';
@@ -291,6 +321,7 @@
   for (let k in labels) createRow(k, labels[k]);
 
   function showNumpad() {
+    if (isLocked) return;
     document.getElementById('numpad').style.display = 'block';
     document.getElementById('numpad-container').style.display = 'block';
     document.getElementById('numpad-display').innerText = document.getElementById('transfer').value;
@@ -303,6 +334,7 @@
   }
 
   function numpadPress(num) {
+    if (isLocked) return;
     let input = document.getElementById('transfer');
     let current = input.value.replace(/,/g, '');
     if (current === '0') current = '';
@@ -312,6 +344,7 @@
   }
 
   function deleteLastChar() {
+    if (isLocked) return;
     let input = document.getElementById('transfer');
     let current = input.value.replace(/,/g, '');
     current = current.slice(0, -1);
@@ -354,7 +387,6 @@
     loadFromLocalStorage();
   };
 
-  // 👉 เพิ่มฟังก์ชันนี้เพื่อซ่อนคีย์บอร์ดเมื่อแตะที่อื่น
   document.addEventListener("click", function (event) {
     const numpadContainer = document.getElementById("numpad-container");
     const transferInput = document.getElementById("transfer");
