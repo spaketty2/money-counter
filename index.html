@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>นับเงิน + คีย์บอร์ดเสมือน</title>
 
-  <!-- PWA (เดิมจากรอบก่อน) -->
+  <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#3a3a3a">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -31,6 +31,9 @@
       flex-direction: column;
       justify-content: flex-start;
     }
+    /* ตัวเว้นด้านบนแบบคงที่ (ใหม่) */
+    #top-spacer { height: 0px; flex: 0 0 auto; }
+
     #frame { flex: 1 1 auto; overflow-y: auto; }
     .row { display: flex; flex-wrap: wrap; align-items: center; margin: 2px 0; }
     button {
@@ -70,7 +73,7 @@
     }
     .numpad-btn:active { background: #00aaff; }
 
-    /* ปุ่มล็อค (เดิม) */
+    /* ปุ่มล็อค */
     #lock-btn { font-size: 13px; height: 34px; width: 70px; margin-left: 1px; }
     .locked { color: yellow; }
     .unlocked { color: white; }
@@ -78,8 +81,12 @@
 </head>
 <body>
 
+<!-- ตัวเว้นด้านบน (ใหม่) -->
+<div id="top-spacer"></div>
+
 <div id="frame"></div>
 
+<!-- Undo / Redo / Clear / Full / Lock -->
 <div class="clear-btn">
   <button id="undo-btn" style="width: 58px" onclick="__undo()"> Undo </button>
   <button id="redo-btn" style="width: 58px" onclick="__redo()"> Redo </button>
@@ -192,7 +199,8 @@
     let diff=total-fee; document.getElementById("total-diff").innerText=diff.toLocaleString();
   }
 
-  const labels={ bn1000:'1000', bn500:'500', bn100:'100', bn50:'50', bn20:'20', c10:'10', c5:'5', c2:'2', c1:'1', p100:'100', n:'...' };
+  const labels={ bn1000:'1000', bn500:'500', bn100:'100', bn50:'50', bn20:'20',
+                 c10:'10', c5:'5', c2:'2', c1:'1', p100:'100', n:'...' };
   for (let k in labels) createRow(k,labels[k]);
 
   function showNumpad(){ if(isLocked) return; document.getElementById('numpad').style.display='block'; document.getElementById('numpad-container').style.display='block'; document.getElementById('numpad-display').innerText=document.getElementById('transfer').value; }
@@ -213,7 +221,7 @@
   });
 </script>
 
-<!-- ====== ยืนยันล้างข้อมูล (คงเดิมจากรอบก่อน + เช็ค lock) ====== -->
+<!-- ===== ยืนยันล้างข้อมูล ===== -->
 <style>
   #confirm-clear{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.35); z-index:99999; }
   #confirm-clear .cc-modal{ width:320px; max-width:calc(100% - 48px); border-radius:16px; background:#fff; color:#111; box-shadow:0 12px 36px rgba(0,0,0,.35); overflow:hidden; font-family:inherit; }
@@ -251,7 +259,7 @@
   })();
 </script>
 
-<!-- ====== Undo/Redo (คงเดิมจาก 1.2 และเช็ค lock) ====== -->
+<!-- ===== Undo/Redo ===== -->
 <script>
   (function(){
     const MAX_HISTORY=20; let __history=[]; let __future=[]; let __isRestoring=false;
@@ -267,37 +275,35 @@
   })();
 </script>
 
-<!-- ====== PWA & Fullscreen + แก้ช่องว่าง (อัปเดต) ====== -->
+<!-- ===== PWA & Fullscreen + FIX ช่องว่างด้วย top-spacer ===== -->
 <script>
-  // ลงทะเบียน SW (เหมือนเดิม)
   if('serviceWorker' in navigator){
     window.addEventListener('load',()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
   }
 
   (function(){
     const SPACER_SELECTOR='div[style*="margin-bottom: 80px"]';
-    let __nudgeTimer=null;
+    const topSpacer=document.getElementById('top-spacer');
 
-    // ปรับ padding ของ #frame ให้ "ส่วนเกิน" ไปกองด้านบน และด้านล่างเหลือ ~6px
-    function adjustFramePadding(){
-      const frame=document.getElementById('frame'); if(!frame) return;
+    // ปรับความสูง top-spacer ให้กิน "ส่วนเกิน" ของ #frame ทั้งหมด
+    function fixGapsWithTopSpacer(){
+      const frame=document.getElementById('frame');
+      if(!frame || !topSpacer) return;
 
-      // ล้างก่อนวัด เพื่อไม่ให้ padding เดิมปนการคำนวณ
-      const prevPT=frame.style.paddingTop, prevPB=frame.style.paddingBottom;
-      frame.style.paddingTop='0px'; frame.style.paddingBottom='0px';
+      // รีเซ็ตก่อนวัด
+      topSpacer.style.height='0px';
 
-      const boxH=frame.clientHeight;          // ความสูงกล่อง
-      const contentH=frame.scrollHeight;      // ความสูงเนื้อหา (ไม่รวม padding เพราะเราตั้งเป็น 0 แล้ว)
-      const extra=Math.max(boxH - contentH, 0);
+      // ส่วนเกินภายในเฟรม (กล่อง - เนื้อหา)
+      const extra=Math.max(frame.clientHeight - frame.scrollHeight, 0);
 
-      const bottomPad=Math.min(6, extra);     // ชิดแถว Clear (เหลือหายใจ 6px)
-      const topPad=Math.max(extra - bottomPad, 0);
+      // อยากให้ชิดปุ่ม Clear ด้านล่างเล็กน้อย ~6px
+      const bottomKeep=6;
+      const h=Math.max(0, extra - bottomKeep);
 
-      frame.style.paddingTop=topPad+'px';
-      frame.style.paddingBottom=bottomPad+'px';
+      topSpacer.style.height = h + 'px';
     }
 
-    function setSpacer(isFull){
+    function setSpacerBottom(isFull){
       const sp=document.querySelector(SPACER_SELECTOR);
       if(sp) sp.style.marginBottom=isFull?'12px':'80px';
     }
@@ -309,26 +315,16 @@
     function updateUI(){
       const full=!!document.fullscreenElement || isStandalone();
       const btn=document.getElementById('fs-btn'); if(btn) btn.textContent=full?'Exit':'Full';
-      setSpacer(full);
+      setSpacerBottom(full);
 
-      // คำนวณทันที + นัดกระตุกเลย์เอาต์รัว ๆ ช่วงสั้น ๆ กันอาการแถบบราวเซอร์ค่อย ๆ หด/ขยาย
-      adjustFramePadding();
-      if(__nudgeTimer) clearTimeout(__nudgeTimer);
-      // คิวหลายจังหวะ
-      setTimeout(adjustFramePadding, 50);
-      setTimeout(adjustFramePadding, 250);
-      setTimeout(adjustFramePadding, 600);
-      setTimeout(adjustFramePadding, 1200);
-
-      // เฝ้า 1.5s ด้วย requestAnimationFrame
-      const start=performance.now();
-      (function rafLoop(){
-        adjustFramePadding();
-        if(performance.now()-start < 1500) requestAnimationFrame(rafLoop);
-      })();
+      // วัดหลายรอบเผื่อแถบเบราว์เซอร์เลื่อนช้า
+      fixGapsWithTopSpacer();
+      requestAnimationFrame(fixGapsWithTopSpacer);
+      setTimeout(fixGapsWithTopSpacer, 120);
+      setTimeout(fixGapsWithTopSpacer, 400);
+      setTimeout(fixGapsWithTopSpacer, 800);
     }
 
-    // ปุ่ม Full/Exit (เคารพ lock)
     window.__toggleFullscreen=function(){
       if(isLocked) return;
       const el=document.documentElement;
@@ -339,29 +335,16 @@
       }
     };
 
-    // อีเวนต์ที่มีผลต่อขนาด viewport จริง ๆ
     window.addEventListener('load', updateUI);
     window.addEventListener('resize', updateUI);
     window.addEventListener('orientationchange', updateUI);
     document.addEventListener('fullscreenchange', updateUI);
-
-    // รองรับ VisualViewport (มือถือจะเปลี่ยนความสูงหลังสักครู่)
     if(window.visualViewport){
       visualViewport.addEventListener('resize', updateUI);
       visualViewport.addEventListener('scroll', updateUI);
     }
-
-    // เผื่อบางเครื่องที่ไม่ยิงอีเวนต์ใด ๆ เลยหลังเข้าฟูลสกรีน
-    document.addEventListener('click', function(e){
-      // ถ้ากำลังอยู่โหมด Full ให้จิ้มไหนก็ได้แล้วปรับ padding ซ้ำอย่างเบา ๆ
-      if(document.fullscreenElement) {
-        if(__nudgeTimer) clearTimeout(__nudgeTimer);
-        __nudgeTimer=setTimeout(adjustFramePadding, 80);
-      }
-    });
   })();
 </script>
-<!-- ====== /PWA & Fullscreen ====== -->
 
 </body>
 </html>
