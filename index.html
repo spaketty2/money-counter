@@ -146,7 +146,7 @@
     #lock-btn {
       font-size: 13px;
       height: 34px;
-      width: 70px;   /* จาก 1.2 */
+      width: 70px;   /* คงตาม 1.2 */
       margin-left: 1px;
     }
     .locked { color: yellow; }
@@ -505,7 +505,7 @@
       if (ev.key === 'Enter') __confirmClear();
     });
 
-    // ถ้า Lock ให้ไม่เปิดหน้าต่างยืนยัน
+    // Lock แล้วไม่ต้องเด้งยืนยัน
     window.clearAll = function () {
       if (window.isLocked) return;
       __showConfirmClear();
@@ -602,7 +602,7 @@
 </script>
 <!-- ===== /Undo/Redo ===== -->
 
-<!-- ===== PWA & Fullscreen (1.3) ===== -->
+<!-- ===== PWA & Fullscreen (1.3) + ปรับช่องว่างบน/ล่าง ของแผงตาราง ===== -->
 <script>
   // ลงทะเบียน Service Worker
   if ('serviceWorker' in navigator) {
@@ -611,25 +611,55 @@
     });
   }
 
-  // จัดระยะห่างตารางกับแถว Clear ให้เหมือนภาพก่อนเต็มจอ
-  (function spacingForFullscreen(){
+  // สลับ Fullscreen ด้วยปุ่ม Full/Exit และปรับช่องว่างบน/ล่างของ #frame
+  (function () {
     const SPACER_SELECTOR = 'div[style*="margin-bottom: 80px"]';
-    function setSpacer(isFull){
+
+    // กระจาย "พื้นที่ว่างส่วนเกิน" ของ #frame ให้เป็น paddingTop/paddingBottom เท่า ๆ กัน
+    function adjustFramePadding() {
+      const frame = document.getElementById('frame');
+      if (!frame) return;
+
+      // ลบ padding ที่เคยตั้ง เพื่อวัดค่าใหม่
+      frame.style.paddingTop = '';
+      frame.style.paddingBottom = '';
+
+      // ความสูงของกล่องและความสูงเนื้อหา
+      const boxH = frame.clientHeight;
+      const contentH = frame.scrollHeight;
+
+      // ส่วนเกินภายในกรอบ (ถ้าเนื้อหาน้อยกว่ากรอบ)
+      const extra = Math.max(boxH - contentH, 0);
+
+      // แบ่งครึ่งบน/ล่าง (ปัดให้พอดี)
+      const topPad = Math.floor(extra / 2);
+      const bottomPad = extra - topPad;
+
+      frame.style.paddingTop = topPad + 'px';
+      frame.style.paddingBottom = bottomPad + 'px';
+    }
+
+    function setSpacerForMode(isFull) {
       const sp = document.querySelector(SPACER_SELECTOR);
       if (sp) sp.style.marginBottom = isFull ? '12px' : '80px';
     }
-    function isStandalone(){ return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches; }
-    function update(){
+
+    function isStandalone() {
+      return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+    }
+
+    function updateUI() {
       const full = !!document.fullscreenElement || isStandalone();
       const btn = document.getElementById('fs-btn');
       if (btn) btn.textContent = full ? 'Exit' : 'Full';
-      setSpacer(full);
+      setSpacerForMode(full);
+
+      // รอให้ layout เสถียรแล้วค่อยคำนวณ padding
+      requestAnimationFrame(adjustFramePadding);
     }
-    document.addEventListener('fullscreenchange', update);
-    window.addEventListener('load', update);
-    // บราวเซอร์บางตัวไม่รองรับ event นี้ ไม่เป็นไร
-    try { window.matchMedia('(display-mode: standalone)').addEventListener('change', update); } catch(e) {}
-    window.__toggleFullscreen = function(){
+
+    // ปุ่มสลับ Fullscreen
+    window.__toggleFullscreen = function () {
       const el = document.documentElement;
       if (document.fullscreenElement) {
         if (document.exitFullscreen) document.exitFullscreen();
@@ -637,6 +667,13 @@
         el.requestFullscreen().catch(()=>{});
       }
     };
+
+    // อีเวนต์ที่มีผลต่อการจัดวาง
+    window.addEventListener('load', updateUI);
+    window.addEventListener('resize', updateUI);
+    window.addEventListener('orientationchange', updateUI);
+    document.addEventListener('fullscreenchange', updateUI);
+    try { window.matchMedia('(display-mode: standalone)').addEventListener('change', updateUI); } catch(e) {}
   })();
 </script>
 <!-- ===== /PWA & Fullscreen ===== -->
