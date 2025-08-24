@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>นับเงิน + คีย์บอร์ดเสมือน</title>
+
+  <!-- ===== PWA additions (1.3) ===== -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#3a3a3a">
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="นับเงิน">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <!-- ===== /PWA additions ===== -->
+
   <style>
     /* [คงเดิม] ... */
     * { user-select: none; -webkit-user-select: none; -ms-user-select: none; }
@@ -137,7 +148,7 @@
     #lock-btn {
       font-size: 13px;
       height: 34px;
-      width: 45px;
+      width: 70px;   /* จาก 1.2 */
       margin-left: 1px;
     }
     .locked { color: yellow; }
@@ -148,12 +159,12 @@
 
 <div id="frame"></div>
 
-<!-- เพิ่มปุ่ม Undo / Redo ทางซ้ายของ Clear ตามสเปค -->
+<!-- ปุ่ม Undo/Redo + Clear + Lock (จาก 1.2) -->
 <div class="clear-btn">
   <button id="undo-btn" style="width: 58px" onclick="__undo()"> Undo </button>
   <button id="redo-btn" style="width: 58px" onclick="__redo()"> Redo </button>
   <button style="width: 100%" onclick="clearAll()">Clear</button>
-  <button id="lock-btn" class="unlocked" style="width: 70px" onclick="toggleLock()">Unlock</button>
+  <button id="lock-btn" class="unlocked" onclick="toggleLock()">Unlock</button>
 </div>
 
 <div class="sum-section">
@@ -402,7 +413,7 @@
   });
 </script>
 
-<!-- ====================== ยืนยันล้างข้อมูล (จากเวอร์ชัน 1.1) ====================== -->
+<!-- ====================== ยืนยันล้างข้อมูล (1.1) ====================== -->
 <style>
   #confirm-clear {
     position: fixed;
@@ -457,10 +468,9 @@
 </div>
 
 <script>
-  /* หุ้ม clearAll เดิม (ไม่แก้ตรรกะเดิม) + เตรียม undo/redo wrap ภายหลัง */
+  /* หุ้ม clearAll เดิม (ไม่แก้ตรรกะเดิม) */
   (function () {
     if (typeof window.clearAll !== 'function') return;
-
     const __clearAllOriginal = window.clearAll;
 
     function __showConfirmClear() {
@@ -501,7 +511,7 @@
 </script>
 <!-- ====================== /ยืนยันล้างข้อมูล (1.1) ====================== -->
 
-<!-- ====================== เพิ่ม Undo/Redo (1.2) ====================== -->
+<!-- ====================== Undo/Redo (1.2) ====================== -->
 <script>
   (function () {
     const MAX_HISTORY = 20;
@@ -510,7 +520,6 @@
     let __isRestoring = false;
 
     function __snapshot() {
-      // เก็บ values และ transfer ปัจจุบัน
       const snap = {
         values: {},
         transfer: document.getElementById("transfer").value
@@ -521,7 +530,6 @@
 
     function __applyState(state) {
       __isRestoring = true;
-      // set values + inputs + mul
       for (const k in prices) {
         values[k] = state.values[k] || 0;
         const el = document.getElementById(k);
@@ -531,10 +539,8 @@
           if (mulEl) mulEl.innerText = (values[k] * prices[k]).toLocaleString();
         }
       }
-      // set transfer
       const t = document.getElementById("transfer");
       if (t) t.value = state.transfer || "0";
-      // update sums
       if (typeof updateTotal === 'function') updateTotal();
       if (typeof updateFeeAndDiff === 'function') updateFeeAndDiff();
       if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
@@ -546,16 +552,13 @@
       const snap = __snapshot();
       __history.push(snap);
       if (__history.length > MAX_HISTORY) __history.shift();
-      // การทำงานใหม่ทำให้อนาคตเป็นโมฆะ
       __future.length = 0;
     }
 
-    // เริ่มต้นเก็บสถานะเริ่ม
     window.addEventListener('load', function () {
       __pushHistory();
     });
 
-    // หุ้มฟังก์ชันที่เปลี่ยนสถานะให้เก็บประวัติ (โดยไม่แก้เนื้อใน)
     function __wrap(fnName) {
       const fn = window[fnName];
       if (typeof fn !== 'function') return;
@@ -570,16 +573,14 @@
     __wrap('numpadPress');
     __wrap('deleteLastChar');
 
-    // clearAll จะถูกเรียกผ่าน __confirmClear อยู่แล้ว -> หุ้ม __confirmClear เพื่อเก็บประวัติ
     if (typeof window.__confirmClear === 'function') {
       const prevConfirm = window.__confirmClear;
       window.__confirmClear = function () {
-        __pushHistory();   // เก็บสถานะก่อนล้าง
+        __pushHistory();
         return prevConfirm();
       };
     }
 
-    // ปุ่ม Undo/Redo
     window.__undo = function () {
       if (__history.length === 0) return;
       const current = __snapshot();
@@ -601,7 +602,31 @@
     };
   })();
 </script>
-<!-- ====================== /เพิ่ม Undo/Redo (1.2) ====================== -->
+<!-- ====================== /Undo/Redo (1.2) ====================== -->
+
+<!-- ===== PWA & Fullscreen bootstrap (1.3) ===== -->
+<script>
+  // ลงทะเบียน Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    });
+  }
+
+  // ขอเข้า Fullscreen หลังผู้ใช้แตะครั้งแรก (ถ้าบราว์เซอร์อนุญาต)
+  (function enableOneTapFullscreen(){
+    const tryFs = () => {
+      const el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); // Safari
+      document.removeEventListener('click', tryFs, true);
+      document.removeEventListener('touchend', tryFs, true);
+    };
+    document.addEventListener('click', tryFs, true);
+    document.addEventListener('touchend', tryFs, true);
+  })();
+</script>
+<!-- ===== /PWA & Fullscreen bootstrap ===== -->
 
 </body>
 </html>
