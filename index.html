@@ -14,7 +14,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
   <style>
-    /* [คงเดิมทั้งหมด] */
+    /* [คงเดิม] */
     * { user-select: none; -webkit-user-select: none; -ms-user-select: none; }
     html, body {
       height: 100%;
@@ -31,7 +31,8 @@
       flex-direction: column;
       justify-content: flex-start;
     }
-    /* ตัวเว้นด้านบนแบบคงที่ (ใหม่) */
+
+    /* เว้นด้านบนแบบชดเชยความสูง (ใหม่) */
     #top-spacer { height: 0px; flex: 0 0 auto; }
 
     #frame { flex: 1 1 auto; overflow-y: auto; }
@@ -81,12 +82,11 @@
 </head>
 <body>
 
-<!-- ตัวเว้นด้านบน (ใหม่) -->
+<!-- ครอบเลย์เอาต์ทั้งหมดเป็นก้อนเดียว โดยมีตัวเว้นด้านบนชดเชยความสูง -->
 <div id="top-spacer"></div>
 
 <div id="frame"></div>
 
-<!-- Undo / Redo / Clear / Full / Lock -->
 <div class="clear-btn">
   <button id="undo-btn" style="width: 58px" onclick="__undo()"> Undo </button>
   <button id="redo-btn" style="width: 58px" onclick="__redo()"> Redo </button>
@@ -221,7 +221,7 @@
   });
 </script>
 
-<!-- ===== ยืนยันล้างข้อมูล ===== -->
+<!-- ====== Confirm Clear (เวอร์ชันคงเดิม + เช็ค lock) ====== -->
 <style>
   #confirm-clear{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.35); z-index:99999; }
   #confirm-clear .cc-modal{ width:320px; max-width:calc(100% - 48px); border-radius:16px; background:#fff; color:#111; box-shadow:0 12px 36px rgba(0,0,0,.35); overflow:hidden; font-family:inherit; }
@@ -259,7 +259,7 @@
   })();
 </script>
 
-<!-- ===== Undo/Redo ===== -->
+<!-- ====== Undo/Redo (เดิม) ====== -->
 <script>
   (function(){
     const MAX_HISTORY=20; let __history=[]; let __future=[]; let __isRestoring=false;
@@ -275,56 +275,60 @@
   })();
 </script>
 
-<!-- ===== PWA & Fullscreen + FIX ช่องว่างด้วย top-spacer ===== -->
+<!-- ====== PWA & Fullscreen: “ชดเชยความสูงด้านบน = ส่วนต่างก่อน/หลัง” ====== -->
 <script>
+  // Service Worker (เหมือนเดิม)
   if('serviceWorker' in navigator){
     window.addEventListener('load',()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
   }
 
   (function(){
-    const SPACER_SELECTOR='div[style*="margin-bottom: 80px"]';
     const topSpacer=document.getElementById('top-spacer');
+    const SPACER_BOTTOM_SELECTOR='div[style*="margin-bottom: 80px"]';
+    const bottomWhenNormal=80, bottomWhenFull=12;
 
-    // ปรับความสูง top-spacer ให้กิน "ส่วนเกิน" ของ #frame ทั้งหมด
-    function fixGapsWithTopSpacer(){
-      const frame=document.getElementById('frame');
-      if(!frame || !topSpacer) return;
+    // เก็บ "ความสูงฐาน" ขณะยังไม่เต็มจอ (ไว้เทียบตอนเข้าเต็มจอ)
+    let baseViewportH = null;
 
-      // รีเซ็ตก่อนวัด
-      topSpacer.style.height='0px';
-
-      // ส่วนเกินภายในเฟรม (กล่อง - เนื้อหา)
-      const extra=Math.max(frame.clientHeight - frame.scrollHeight, 0);
-
-      // อยากให้ชิดปุ่ม Clear ด้านล่างเล็กน้อย ~6px
-      const bottomKeep=6;
-      const h=Math.max(0, extra - bottomKeep);
-
-      topSpacer.style.height = h + 'px';
+    function getVH(){
+      return (window.visualViewport ? Math.round(visualViewport.height) : window.innerHeight || document.documentElement.clientHeight);
     }
 
-    function setSpacerBottom(isFull){
-      const sp=document.querySelector(SPACER_SELECTOR);
-      if(sp) sp.style.marginBottom=isFull?'12px':'80px';
+    function isStandalone(){ return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches; }
+    function isFull(){ return !!document.fullscreenElement || isStandalone(); }
+
+    function setBottomSpacer(full){
+      const sp=document.querySelector(SPACER_BOTTOM_SELECTOR);
+      if(sp) sp.style.marginBottom = (full ? bottomWhenFull : bottomWhenNormal) + 'px';
     }
 
-    function isStandalone(){
-      return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+    // โหมด Full/Exit: ชดเชยด้วย top-spacer = max(0, (VH ปัจจุบัน) - (VH ฐาน))
+    function applyTopCompensation(){
+      if(!topSpacer) return;
+      if(isFull()){
+        if(baseViewportH==null){ /* safety */ baseViewportH=getVH(); }
+        const delta = Math.max(0, getVH() - baseViewportH);
+        topSpacer.style.height = delta + 'px';
+      }else{
+        topSpacer.style.height = '0px';
+        // อัปเดตฐานใหม่ทุกครั้งที่อยู่นอกโหมดเต็มจอ
+        baseViewportH = getVH();
+      }
     }
 
-    function updateUI(){
-      const full=!!document.fullscreenElement || isStandalone();
-      const btn=document.getElementById('fs-btn'); if(btn) btn.textContent=full?'Exit':'Full';
-      setSpacerBottom(full);
+    function syncUI(){
+      const btn=document.getElementById('fs-btn');
+      if(btn) btn.textContent = isFull() ? 'Exit' : 'Full';
+      setBottomSpacer(isFull());
+      applyTopCompensation();
 
-      // วัดหลายรอบเผื่อแถบเบราว์เซอร์เลื่อนช้า
-      fixGapsWithTopSpacer();
-      requestAnimationFrame(fixGapsWithTopSpacer);
-      setTimeout(fixGapsWithTopSpacer, 120);
-      setTimeout(fixGapsWithTopSpacer, 400);
-      setTimeout(fixGapsWithTopSpacer, 800);
+      // บางเบราว์เซอร์เลื่อนแถบช้า—กระตุ้นซ้ำไม่กี่ครั้ง
+      setTimeout(applyTopCompensation, 80);
+      setTimeout(applyTopCompensation, 250);
+      setTimeout(applyTopCompensation, 600);
     }
 
+    // ปุ่มสลับโหมด (เช็ค lock ด้วย)
     window.__toggleFullscreen=function(){
       if(isLocked) return;
       const el=document.documentElement;
@@ -335,13 +339,14 @@
       }
     };
 
-    window.addEventListener('load', updateUI);
-    window.addEventListener('resize', updateUI);
-    window.addEventListener('orientationchange', updateUI);
-    document.addEventListener('fullscreenchange', updateUI);
+    // ตั้งฐานครั้งแรก
+    window.addEventListener('load', ()=>{ baseViewportH = getVH(); syncUI(); });
+    window.addEventListener('resize', syncUI);
+    window.addEventListener('orientationchange', syncUI);
+    document.addEventListener('fullscreenchange', syncUI);
     if(window.visualViewport){
-      visualViewport.addEventListener('resize', updateUI);
-      visualViewport.addEventListener('scroll', updateUI);
+      visualViewport.addEventListener('resize', syncUI);
+      visualViewport.addEventListener('scroll', syncUI);
     }
   })();
 </script>
