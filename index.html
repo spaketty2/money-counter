@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>นับเงิน + คีย์บอร์ดเสมือน</title>
 
-  <!-- PWA additions (1.3) -->
+  <!-- PWA (1.3) -->
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#3a3a3a">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -146,7 +146,7 @@
     #lock-btn {
       font-size: 13px;
       height: 34px;
-      width: 70px;   /* คงตาม 1.2 */
+      width: 70px;
       margin-left: 1px;
     }
     .locked { color: yellow; }
@@ -157,7 +157,7 @@
 
 <div id="frame"></div>
 
-<!-- ปุ่ม Undo/Redo + Clear + Full/Exit + Lock -->
+<!-- Undo / Redo / Clear / Full / Lock -->
 <div class="clear-btn">
   <button id="undo-btn" style="width: 58px" onclick="__undo()"> Undo </button>
   <button id="redo-btn" style="width: 58px" onclick="__redo()"> Redo </button>
@@ -467,7 +467,7 @@
 </div>
 
 <script>
-  /* หุ้ม clearAll เดิม (1.1) + ไม่แสดงยืนยันเมื่อ Lock */
+  /* หุ้ม clearAll เดิม + ไม่แสดงยืนยันเมื่อ Lock */
   (function () {
     if (typeof window.clearAll !== 'function') return;
     const __clearAllOriginal = window.clearAll;
@@ -505,9 +505,9 @@
       if (ev.key === 'Enter') __confirmClear();
     });
 
-    // Lock แล้วไม่ต้องเด้งยืนยัน
+    // ใช้ตัวแปร isLocked โดยตรง (ไม่ผ่าน window.)
     window.clearAll = function () {
-      if (window.isLocked) return;
+      if (isLocked) return;         // Lock: ไม่เปิด modal
       __showConfirmClear();
     };
   })();
@@ -579,7 +579,9 @@
       };
     }
 
+    // Lock แล้วไม่ให้ Undo/Redo ทำงาน
     window.__undo = function () {
+      if (isLocked) return;
       if (__history.length === 0) return;
       const current = __snapshot();
       const prev = __history.pop();
@@ -590,6 +592,7 @@
     };
 
     window.__redo = function () {
+      if (isLocked) return;
       if (__future.length === 0) return;
       const current = __snapshot();
       const next = __future.pop();
@@ -602,7 +605,7 @@
 </script>
 <!-- ===== /Undo/Redo ===== -->
 
-<!-- ===== PWA & Fullscreen (1.3) + ปรับช่องว่างบน/ล่าง ของแผงตาราง ===== -->
+<!-- ===== PWA & Fullscreen (1.3) + แก้ช่องว่างกลางจอ ===== -->
 <script>
   // ลงทะเบียน Service Worker
   if ('serviceWorker' in navigator) {
@@ -611,35 +614,28 @@
     });
   }
 
-  // สลับ Fullscreen ด้วยปุ่ม Full/Exit และปรับช่องว่างบน/ล่างของ #frame
+  // ปุ่มสลับ Full/Exit + จัดระยะ #frame
   (function () {
     const SPACER_SELECTOR = 'div[style*="margin-bottom: 80px"]';
 
-    // กระจาย "พื้นที่ว่างส่วนเกิน" ของ #frame ให้เป็น paddingTop/paddingBottom เท่า ๆ กัน
+    // ปรับ padding บน/ล่างของ #frame:
+    //   - ส่วนเกินเนื้อหา (extra) จะไปกอง "บน" เป็นหลัก
+    //   - ด้านล่างเหลือแค่ระยะหายใจเล็กน้อย (6px) เพื่อชน Clear
     function adjustFramePadding() {
       const frame = document.getElementById('frame');
       if (!frame) return;
-
-      // ลบ padding ที่เคยตั้ง เพื่อวัดค่าใหม่
       frame.style.paddingTop = '';
       frame.style.paddingBottom = '';
-
-      // ความสูงของกล่องและความสูงเนื้อหา
       const boxH = frame.clientHeight;
       const contentH = frame.scrollHeight;
-
-      // ส่วนเกินภายในกรอบ (ถ้าเนื้อหาน้อยกว่ากรอบ)
       const extra = Math.max(boxH - contentH, 0);
-
-      // แบ่งครึ่งบน/ล่าง (ปัดให้พอดี)
-      const topPad = Math.floor(extra / 2);
-      const bottomPad = extra - topPad;
-
+      const bottomPad = Math.min(6, extra);           // ชิดแถว Clear
+      const topPad = Math.max(extra - bottomPad, 0);  // ที่เหลือไปด้านบน
       frame.style.paddingTop = topPad + 'px';
       frame.style.paddingBottom = bottomPad + 'px';
     }
 
-    function setSpacerForMode(isFull) {
+    function setSpacer(isFull) {
       const sp = document.querySelector(SPACER_SELECTOR);
       if (sp) sp.style.marginBottom = isFull ? '12px' : '80px';
     }
@@ -652,14 +648,13 @@
       const full = !!document.fullscreenElement || isStandalone();
       const btn = document.getElementById('fs-btn');
       if (btn) btn.textContent = full ? 'Exit' : 'Full';
-      setSpacerForMode(full);
-
-      // รอให้ layout เสถียรแล้วค่อยคำนวณ padding
+      setSpacer(full);
       requestAnimationFrame(adjustFramePadding);
     }
 
-    // ปุ่มสลับ Fullscreen
+    // ปุ่ม Full/Exit (ล็อกแล้วไม่ทำงาน)
     window.__toggleFullscreen = function () {
+      if (isLocked) return;
       const el = document.documentElement;
       if (document.fullscreenElement) {
         if (document.exitFullscreen) document.exitFullscreen();
@@ -668,12 +663,13 @@
       }
     };
 
-    // อีเวนต์ที่มีผลต่อการจัดวาง
     window.addEventListener('load', updateUI);
     window.addEventListener('resize', updateUI);
     window.addEventListener('orientationchange', updateUI);
     document.addEventListener('fullscreenchange', updateUI);
-    try { window.matchMedia('(display-mode: standalone)').addEventListener('change', updateUI); } catch(e) {}
+    try {
+      window.matchMedia('(display-mode: standalone)').addEventListener('change', updateUI);
+    } catch(e) {}
   })();
 </script>
 <!-- ===== /PWA & Fullscreen ===== -->
