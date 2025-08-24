@@ -28,6 +28,7 @@
       flex-wrap: wrap;
       align-items: center;
       margin: 2px 0;
+      transition: background-color .18s ease;
     }
     button {
       background: #4c4c4c;
@@ -53,95 +54,44 @@
       width: 46px;
     }
     .label { flex: 0 0 36px; text-align: center; font-size: 12px; }
-    .multiply {
-      flex: 1;
-      text-align: right;
-      font-size: 12px;
-      padding-right: 6px;
-      min-width: 40px;
-    }
-    .clear-btn {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 8px 0;
-    }
+    .multiply { flex: 1; text-align: right; font-size: 12px; padding-right: 6px; min-width: 40px; }
+    .clear-btn { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
     .sum-section, .floating-label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: bold;
-      font-size: 14px;
-      margin: 6px 0;
-      flex-wrap: wrap;
+      display: flex; justify-content: space-between; align-items: center;
+      font-weight: bold; font-size: 14px; margin: 6px 0; flex-wrap: wrap;
     }
     .floating-label input {
-      width: 100px;
-      font-size: 14px;
-      text-align: right;
-      padding: 10px;
-      background: #5c5c5c;
-      color: #ffffff;
-      border: none;
-      border-radius: 4px;
-      margin-left: 8px;
+      width: 100px; font-size: 14px; text-align: right; padding: 10px;
+      background: #5c5c5c; color: #ffffff; border: none; border-radius: 4px; margin-left: 8px;
     }
-    .green {
-      color: #00ff88;
-      min-width: 60px;
-      text-align: right;
-    }
+    .green { color: #00ff88; min-width: 60px; text-align: right; }
     #numpad-container {
-      position: fixed;
-      bottom: 0;
-      right: 0;
-      width: 60%;
-      height: auto;
-      z-index: 9999;
-      background: transparent;
-      display: none;
+      position: fixed; bottom: 0; right: 0; width: 60%; height: auto; z-index: 9999;
+      background: transparent; display: none;
     }
     #numpad-display {
-      text-align: right;
-      font-size: 18px;
-      padding: 10px 14px;
-      background: #111;
-      color: #00ff88;
+      text-align: right; font-size: 18px; padding: 10px 14px; background: #111; color: #00ff88;
       border-top-left-radius: 10px;
     }
-    #numpad {
-      background: #222;
-      display: none;
-      padding: 10px;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
-    }
-    .numpad-row {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 6px;
-    }
+    #numpad { background: #222; display: none; padding: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.5); }
+    .numpad-row { display: flex; justify-content: center; margin-bottom: 6px; }
     .numpad-btn {
-      width: 50px;
-      height: 50px;
-      margin: 3px;
-      font-size: 20px;
-      border: none;
-      border-radius: 8px;
-      background: #444;
-      color: #fff;
-      cursor: pointer;
+      width: 50px; height: 50px; margin: 3px; font-size: 20px; border: none; border-radius: 8px;
+      background: #444; color: #fff; cursor: pointer;
     }
     .numpad-btn:active { background: #00aaff; }
 
     /* ปุ่มล็อค */
-    #lock-btn {
-      font-size: 13px;
-      height: 34px;
-      width: 70px; /* 1.2 ใช้ตัวอักษร Lock/Unlock */
-      margin-left: 1px;
-    }
+    #lock-btn { font-size: 13px; height: 34px; width: 70px; margin-left: 1px; }
     .locked { color: yellow; }
     .unlocked { color: white; }
+
+    /* ===== ไฮไลท์บรรทัดล่าสุด (ใหม่) ===== */
+    .row-hl {
+      background: rgba(255,255,255,.08);  /* เทาอ่อนกว่า */
+      border-radius: 8px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+    }
   </style>
 </head>
 <body>
@@ -157,8 +107,7 @@
 </div>
 
 <div class="sum-section">
-  <div>รวม</div>
-  <div id="total-sum" class="green">0</div>
+  <div>รวม</div><div id="total-sum" class="green">0</div>
 </div>
 
 <div class="floating-label">
@@ -167,13 +116,11 @@
 </div>
 
 <div class="sum-section">
-  <div>รวมค่าธรรมเนียม</div>
-  <div id="total-fee" class="green">0</div>
+  <div>รวมค่าธรรมเนียม</div><div id="total-fee" class="green">0</div>
 </div>
 
 <div class="sum-section">
-  <div>ขาดเหลือ</div>
-  <div id="total-diff" class="green">0</div>
+  <div>ขาดเหลือ</div><div id="total-diff" class="green">0</div>
 </div>
 
 <div style="margin-bottom: 80px"></div>
@@ -207,12 +154,8 @@
 <script>
   let isLocked = false;
 
-  const prices = {
-    bn1000: 1000, bn500: 500, bn100: 100, bn50: 50, bn20: 20,
-    c10: 10, c5: 5, c2: 2, c1: 1, p100: 100, n: 1
-  };
-  const values = {};
-  for (let k in prices) values[k] = 0;
+  const prices = { bn1000:1000, bn500:500, bn100:100, bn50:50, bn20:20, c10:10, c5:5, c2:2, c1:1, p100:100, n:1 };
+  const values = {}; for (let k in prices) values[k] = 0;
 
   function lockCheck(callback) {
     return function (...args) {
@@ -399,45 +342,25 @@
   });
 </script>
 
-<!-- ====================== ยืนยันล้างข้อมูล (จาก 1.2 แต่กันตอน Lock) ====================== -->
+<!-- ===== ยืนยันล้างข้อมูล (เหมือนเดิม + กันตอนล็อค) ===== -->
 <style>
   #confirm-clear {
-    position: fixed;
-    inset: 0;
-    display: none;               /* เปิดเป็น flex เมื่อโชว์ */
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,.35); /* พื้นหลังมืดเล็กน้อย */
-    z-index: 99999;
+    position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.35); z-index: 99999;
   }
   #confirm-clear .cc-modal {
-    width: 320px;
-    max-width: calc(100% - 48px);
-    border-radius: 16px;
-    background: #fff;
-    color: #111;
-    box-shadow: 0 12px 36px rgba(0,0,0,.35);
-    overflow: hidden;
-    font-family: inherit;
+    width: 320px; max-width: calc(100% - 48px); border-radius: 16px;
+    background: #fff; color: #111; box-shadow: 0 12px 36px rgba(0,0,0,.35); overflow: hidden; font-family: inherit;
   }
   @media (prefers-color-scheme: dark) {
     #confirm-clear .cc-modal { background:#1f1f1f; color:#f5f5f5; }
   }
   #confirm-clear .cc-head { font-weight:700; padding:16px 16px 8px; font-size:16px; }
   #confirm-clear .cc-body { padding:0 16px 12px; font-size:14px; opacity:.95; }
-  #confirm-clear .cc-actions {
-    display:flex; gap:10px; justify-content:flex-end; align-items:center;
-    padding:10px 16px 16px;
-  }
-  #confirm-clear .cc-btn {
-    appearance:none; border:0; border-radius:12px;
-    padding:8px 14px; font-size:14px; line-height:1.3; cursor:pointer;
-    width:auto; display:inline-block; white-space:nowrap;
-  }
+  #confirm-clear .cc-actions { display:flex; gap:10px; justify-content:flex-end; align-items:center; padding:10px 16px 16px; }
+  #confirm-clear .cc-btn { appearance:none; border:0; border-radius:12px; padding:8px 14px; font-size:14px; line-height:1.3; cursor:pointer; width:auto; display:inline-block; white-space:nowrap; }
   #confirm-clear .cc-btn.outline { background:transparent; border:1px solid rgba(0,0,0,.25); }
-  @media (prefers-color-scheme: dark) {
-    #confirm-clear .cc-btn.outline { border-color: rgba(255,255,255,.35); }
-  }
+  @media (prefers-color-scheme: dark) { #confirm-clear .cc-btn.outline { border-color: rgba(255,255,255,.35); } }
   #confirm-clear .cc-btn.primary { background:#1a73e8; color:#fff; }
   #confirm-clear .cc-btn.primary:active { transform: translateY(1px); }
 </style>
@@ -454,7 +377,6 @@
 </div>
 
 <script>
-  /* หุ้ม clearAll เดิม (ไม่แก้ตรรกะเดิม) + กันตอน lock */
   (function () {
     if (typeof window.clearAll !== 'function') return;
 
@@ -479,7 +401,8 @@
     }
     function __confirmClear() {
       __hideConfirmClear();
-      __clearAllOriginal(); // ล้างจริงเมื่อยืนยัน
+      __clearAllOriginal();
+      if (window.__clearRowHighlight) window.__clearRowHighlight(); // ล้างไฮไลท์เมื่อเคลียร์ทั้งหมด
     }
 
     window.__hideConfirmClear = __hideConfirmClear;
@@ -493,16 +416,14 @@
       if (ev.key === 'Enter') __confirmClear();
     });
 
-    // แทนที่ clearAll ให้แสดงยืนยัน (โดยไม่แตะตรรกะเดิม) + เช็ค lock
     window.clearAll = function () {
-      if (isLocked) return; // ขณะ lock ไม่เปิด modal
+      if (isLocked) return; // ขณะ lock ไม่ให้เด้ง modal
       __showConfirmClear();
     };
   })();
 </script>
-<!-- ====================== /ยืนยันล้างข้อมูล ====================== -->
 
-<!-- ====================== Undo/Redo (20 ขั้น) ====================== -->
+<!-- ===== Undo/Redo (20 ขั้น) ===== -->
 <script>
   (function () {
     const MAX_HISTORY = 20;
@@ -511,18 +432,13 @@
     let __isRestoring = false;
 
     function __snapshot() {
-      // เก็บ values และ transfer ปัจจุบัน
-      const snap = {
-        values: {},
-        transfer: document.getElementById("transfer").value
-      };
+      const snap = { values: {}, transfer: document.getElementById("transfer").value };
       for (const k in prices) snap.values[k] = values[k] || 0;
       return snap;
     }
 
     function __applyState(state) {
       __isRestoring = true;
-      // set values + inputs + mul
       for (const k in prices) {
         values[k] = state.values[k] || 0;
         const el = document.getElementById(k);
@@ -532,10 +448,8 @@
           if (mulEl) mulEl.innerText = (values[k] * prices[k]).toLocaleString();
         }
       }
-      // set transfer
       const t = document.getElementById("transfer");
       if (t) t.value = state.transfer || "0";
-      // update sums
       if (typeof updateTotal === 'function') updateTotal();
       if (typeof updateFeeAndDiff === 'function') updateFeeAndDiff();
       if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
@@ -547,16 +461,11 @@
       const snap = __snapshot();
       __history.push(snap);
       if (__history.length > MAX_HISTORY) __history.shift();
-      // การทำงานใหม่ทำให้อนาคตเป็นโมฆะ
       __future.length = 0;
     }
 
-    // เริ่มต้นเก็บสถานะเริ่ม
-    window.addEventListener('load', function () {
-      __pushHistory();
-    });
+    window.addEventListener('load', function () { __pushHistory(); });
 
-    // หุ้มฟังก์ชันที่เปลี่ยนสถานะให้เก็บประวัติ (โดยไม่แก้เนื้อใน)
     function __wrap(fnName) {
       const fn = window[fnName];
       if (typeof fn !== 'function') return;
@@ -568,19 +477,17 @@
     __wrap('changeValue');
     __wrap('clearValue');
     __wrap('onValueChange');
-    __wrap('numpadPress');
     __wrap('deleteLastChar');
+    __wrap('numpadPress');
 
-    // clearAll จะถูกเรียกผ่าน __confirmClear อยู่แล้ว -> หุ้ม __confirmClear เพื่อเก็บประวัติ
     if (typeof window.__confirmClear === 'function') {
       const prevConfirm = window.__confirmClear;
       window.__confirmClear = function () {
-        __pushHistory();   // เก็บสถานะก่อนล้าง
+        __pushHistory();
         return prevConfirm();
       };
     }
 
-    // ปุ่ม Undo/Redo (กันตอน lock)
     window.__undo = function () {
       if (isLocked) return;
       if (__history.length === 0) return;
@@ -604,7 +511,59 @@
     };
   })();
 </script>
-<!-- ====================== /Undo/Redo ====================== -->
+
+<!-- ===== ไฮไลท์บรรทัดล่าสุด (wrap แยก ไม่แตะฟังก์ชันเดิม) ===== -->
+<script>
+  (function(){
+    let __lastRow = null;
+
+    function __highlightByKey(key){
+      const input = document.getElementById(key);
+      if(!input) return;
+      const row = input.closest('.row');
+      if(!row) return;
+      if(__lastRow) __lastRow.classList.remove('row-hl');
+      row.classList.add('row-hl');
+      __lastRow = row;
+    }
+
+    function __clearRowHighlight(){
+      if(__lastRow){ __lastRow.classList.remove('row-hl'); __lastRow = null; }
+    }
+
+    // เปิดให้ส่วนอื่นเรียกใช้ได้
+    window.__clearRowHighlight = __clearRowHighlight;
+
+    function wrapHL(name, keyIndexOrGetter){
+      const orig = window[name];
+      if(typeof orig !== 'function') return;
+      window[name] = function(...args){
+        const res = orig.apply(this, args);   // ทำงานเดิมก่อน
+        let key = null;
+        if(typeof keyIndexOrGetter === 'function') key = keyIndexOrGetter(args);
+        else key = args[keyIndexOrGetter];
+        if(key) __highlightByKey(key);
+        return res;
+      };
+    }
+
+    // เฉพาะฟังก์ชันที่มี "key" ของแถว
+    wrapHL('changeValue', 0);                 // (key, delta)
+    wrapHL('clearValue', 0);                  // (key)
+    wrapHL('onValueChange', a => a[1]);       // (input, key)
+    wrapHL('onFocusOut',   a => a[1]);        // (input, key)
+
+    // เมื่อล้างทั้งหมด ให้ลบไฮไลท์ด้วย (ทำไว้แล้วใน __confirmClear, ย้ำอีกชั้นกรณี clearAll ถูกเรียกทางอื่น)
+    const oldClearAll = window.clearAll;
+    if(typeof oldClearAll === 'function'){
+      window.clearAll = function(){
+        const r = oldClearAll.apply(this, arguments);
+        __clearRowHighlight();
+        return r;
+      }
+    }
+  })();
+</script>
 
 </body>
 </html>
