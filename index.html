@@ -399,5 +399,111 @@
   });
 </script>
 
+<!-- ====================== เพิ่มเฉพาะ “หน้าต่างยืนยันล้างข้อมูล” ====================== -->
+<style>
+  /* ใช้เฉพาะในโมดอล: ตัวเลือกเจาะจงด้วย #confirm-clear และ .cc-* เท่านั้น */
+  #confirm-clear {
+    position: fixed;
+    inset: 0;
+    display: none;               /* เปิดเป็น flex เมื่อโชว์ */
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.35); /* พื้นหลังมืดเล็กน้อย */
+    z-index: 99999;
+  }
+  #confirm-clear .cc-modal {
+    width: 320px;
+    max-width: calc(100% - 48px);
+    border-radius: 16px;
+    background: #fff;
+    color: #111;
+    box-shadow: 0 12px 36px rgba(0,0,0,.35);
+    overflow: hidden;
+    font-family: inherit;
+  }
+  @media (prefers-color-scheme: dark) {
+    #confirm-clear .cc-modal { background:#1f1f1f; color:#f5f5f5; }
+  }
+  #confirm-clear .cc-head { font-weight:700; padding:16px 16px 8px; font-size:16px; }
+  #confirm-clear .cc-body { padding:0 16px 12px; font-size:14px; opacity:.95; }
+  #confirm-clear .cc-actions {
+    display:flex; gap:10px; justify-content:flex-end; align-items:center;
+    padding:10px 16px 16px;
+  }
+  /* ปุ่มในโมดอล (กว้างพอดีข้อความ) */
+  #confirm-clear .cc-btn {
+    appearance:none; border:0; border-radius:12px;
+    padding:8px 14px; font-size:14px; line-height:1.3; cursor:pointer;
+    width:auto; display:inline-block; white-space:nowrap;
+  }
+  #confirm-clear .cc-btn.outline { background:transparent; border:1px solid rgba(0,0,0,.25); }
+  @media (prefers-color-scheme: dark) {
+    #confirm-clear .cc-btn.outline { border-color: rgba(255,255,255,.35); }
+  }
+  #confirm-clear .cc-btn.primary { background:#1a73e8; color:#fff; }
+  #confirm-clear .cc-btn.primary:active { transform: translateY(1px); }
+</style>
+
+<!-- Modal HTML -->
+<div id="confirm-clear" onclick="__dismissConfirmClear(event)">
+  <div class="cc-modal" role="dialog" aria-modal="true" aria-labelledby="cc-title">
+    <div class="cc-head" id="cc-title">ล้างข้อมูลทั้งหมด?</div>
+    <div class="cc-body">คุณต้องการจะล้างข้อมูลที่นับไว้ทั้งหมดหรือไม่</div>
+    <div class="cc-actions">
+      <button type="button" class="cc-btn outline" onclick="__hideConfirmClear()">ยกเลิก</button>
+      <button type="button" class="cc-btn primary" onclick="__confirmClear()">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* หุ้ม clearAll เดิม (ไม่แก้ตรรกะเดิม) */
+  (function () {
+    if (typeof window.clearAll !== 'function') return;
+
+    const __clearAllOriginal = window.clearAll;
+
+    function __showConfirmClear() {
+      const ov = document.getElementById('confirm-clear');
+      if (!ov) return;
+      ov.style.display = 'flex';
+      // กัน scroll พื้นหลังเฉพาะตอนเปิดโมดอล
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+    }
+    function __hideConfirmClear() {
+      const ov = document.getElementById('confirm-clear');
+      if (!ov) return;
+      ov.style.display = 'none';
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    }
+    function __dismissConfirmClear(e) {
+      if (e.target && e.target.id === 'confirm-clear') __hideConfirmClear();
+    }
+    function __confirmClear() {
+      __hideConfirmClear();
+      __clearAllOriginal(); // เรียกฟังก์ชันเดิมจริง ๆ เมื่อยืนยัน
+    }
+
+    // ให้ HTML เรียกใช้ได้
+    window.__hideConfirmClear = __hideConfirmClear;
+    window.__dismissConfirmClear = __dismissConfirmClear;
+    window.__confirmClear = __confirmClear;
+
+    // รองรับคีย์บอร์ด
+    document.addEventListener('keydown', function (ev) {
+      const ov = document.getElementById('confirm-clear');
+      if (!ov || ov.style.display !== 'flex') return;
+      if (ev.key === 'Escape') __hideConfirmClear();
+      if (ev.key === 'Enter') __confirmClear();
+    });
+
+    // แทนที่ clearAll ให้เปิดหน้าต่างยืนยันแทน (กด “ยืนยัน” ค่อยล้างจริง)
+    window.clearAll = function () { __showConfirmClear(); };
+  })();
+</script>
+<!-- ====================== /เพิ่มเฉพาะ “หน้าต่างยืนยันล้างข้อมูล” ====================== -->
+
 </body>
 </html>
