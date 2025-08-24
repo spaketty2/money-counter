@@ -3,7 +3,7 @@
   "short_name": "นับเงิน",
   "start_url": "./",
   "scope": "./",
-  "fullscreen": "standalone",
+  "display": "standalone",
   "background_color": "#3a3a3a",
   "theme_color": "#3a3a3a",
   "icons": [

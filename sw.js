@@ -1,10 +1,8 @@
-// sw.js — Service Worker แบบเรียบง่าย สำหรับ PWA
+// sw.js — Service Worker แบบเรียบง่ายสำหรับ PWA
 const CACHE = 'money-counter-v1';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
-  // จะพรีแคชไฟล์ล่วงหน้าก็เพิ่มได้ เช่น:
-  // event.waitUntil(caches.open(CACHE).then(c => c.addAll(['./','./index.html','./manifest.webmanifest'])));
 });
 
 self.addEventListener('activate', event => {

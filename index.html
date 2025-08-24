@@ -5,15 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>นับเงิน + คีย์บอร์ดเสมือน</title>
 
-  <!-- ===== PWA additions (1.3) ===== -->
+  <!-- PWA additions (1.3) -->
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#3a3a3a">
-  <!-- iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="นับเงิน">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <!-- ===== /PWA additions ===== -->
 
   <style>
     /* [คงเดิม] ... */
@@ -159,11 +157,12 @@
 
 <div id="frame"></div>
 
-<!-- ปุ่ม Undo/Redo + Clear + Lock (จาก 1.2) -->
+<!-- ปุ่ม Undo/Redo + Clear + Full/Exit + Lock -->
 <div class="clear-btn">
   <button id="undo-btn" style="width: 58px" onclick="__undo()"> Undo </button>
   <button id="redo-btn" style="width: 58px" onclick="__redo()"> Redo </button>
   <button style="width: 100%" onclick="clearAll()">Clear</button>
+  <button id="fs-btn" style="width: 60px" onclick="__toggleFullscreen()">Full</button>
   <button id="lock-btn" class="unlocked" onclick="toggleLock()">Unlock</button>
 </div>
 
@@ -413,15 +412,15 @@
   });
 </script>
 
-<!-- ====================== ยืนยันล้างข้อมูล (1.1) ====================== -->
+<!-- ===== ยืนยันล้างข้อมูล (1.1) ===== -->
 <style>
   #confirm-clear {
     position: fixed;
     inset: 0;
-    display: none;               /* เปิดเป็น flex เมื่อโชว์ */
+    display: none;
     align-items: center;
     justify-content: center;
-    background: rgba(0,0,0,.35); /* พื้นหลังมืดเล็กน้อย */
+    background: rgba(0,0,0,.35);
     z-index: 99999;
   }
   #confirm-clear .cc-modal {
@@ -468,7 +467,7 @@
 </div>
 
 <script>
-  /* หุ้ม clearAll เดิม (ไม่แก้ตรรกะเดิม) */
+  /* หุ้ม clearAll เดิม (1.1) + ไม่แสดงยืนยันเมื่อ Lock */
   (function () {
     if (typeof window.clearAll !== 'function') return;
     const __clearAllOriginal = window.clearAll;
@@ -492,7 +491,7 @@
     }
     function __confirmClear() {
       __hideConfirmClear();
-      __clearAllOriginal(); // ล้างจริงเมื่อยืนยัน
+      __clearAllOriginal();
     }
 
     window.__hideConfirmClear = __hideConfirmClear;
@@ -506,12 +505,16 @@
       if (ev.key === 'Enter') __confirmClear();
     });
 
-    window.clearAll = function () { __showConfirmClear(); };
+    // ถ้า Lock ให้ไม่เปิดหน้าต่างยืนยัน
+    window.clearAll = function () {
+      if (window.isLocked) return;
+      __showConfirmClear();
+    };
   })();
 </script>
-<!-- ====================== /ยืนยันล้างข้อมูล (1.1) ====================== -->
+<!-- ===== /ยืนยันล้างข้อมูล ===== -->
 
-<!-- ====================== Undo/Redo (1.2) ====================== -->
+<!-- ===== Undo/Redo (1.2) ===== -->
 <script>
   (function () {
     const MAX_HISTORY = 20;
@@ -520,10 +523,7 @@
     let __isRestoring = false;
 
     function __snapshot() {
-      const snap = {
-        values: {},
-        transfer: document.getElementById("transfer").value
-      };
+      const snap = { values: {}, transfer: document.getElementById("transfer").value };
       for (const k in prices) snap.values[k] = values[k] || 0;
       return snap;
     }
@@ -555,9 +555,7 @@
       __future.length = 0;
     }
 
-    window.addEventListener('load', function () {
-      __pushHistory();
-    });
+    window.addEventListener('load', function () { __pushHistory(); });
 
     function __wrap(fnName) {
       const fn = window[fnName];
@@ -602,9 +600,9 @@
     };
   })();
 </script>
-<!-- ====================== /Undo/Redo (1.2) ====================== -->
+<!-- ===== /Undo/Redo ===== -->
 
-<!-- ===== PWA & Fullscreen bootstrap (1.3) ===== -->
+<!-- ===== PWA & Fullscreen (1.3) ===== -->
 <script>
   // ลงทะเบียน Service Worker
   if ('serviceWorker' in navigator) {
@@ -613,20 +611,35 @@
     });
   }
 
-  // ขอเข้า Fullscreen หลังผู้ใช้แตะครั้งแรก (ถ้าบราว์เซอร์อนุญาต)
-  (function enableOneTapFullscreen(){
-    const tryFs = () => {
+  // จัดระยะห่างตารางกับแถว Clear ให้เหมือนภาพก่อนเต็มจอ
+  (function spacingForFullscreen(){
+    const SPACER_SELECTOR = 'div[style*="margin-bottom: 80px"]';
+    function setSpacer(isFull){
+      const sp = document.querySelector(SPACER_SELECTOR);
+      if (sp) sp.style.marginBottom = isFull ? '12px' : '80px';
+    }
+    function isStandalone(){ return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches; }
+    function update(){
+      const full = !!document.fullscreenElement || isStandalone();
+      const btn = document.getElementById('fs-btn');
+      if (btn) btn.textContent = full ? 'Exit' : 'Full';
+      setSpacer(full);
+    }
+    document.addEventListener('fullscreenchange', update);
+    window.addEventListener('load', update);
+    // บราวเซอร์บางตัวไม่รองรับ event นี้ ไม่เป็นไร
+    try { window.matchMedia('(display-mode: standalone)').addEventListener('change', update); } catch(e) {}
+    window.__toggleFullscreen = function(){
       const el = document.documentElement;
-      if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
-      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); // Safari
-      document.removeEventListener('click', tryFs, true);
-      document.removeEventListener('touchend', tryFs, true);
+      if (document.fullscreenElement) {
+        if (document.exitFullscreen) document.exitFullscreen();
+      } else if (el.requestFullscreen) {
+        el.requestFullscreen().catch(()=>{});
+      }
     };
-    document.addEventListener('click', tryFs, true);
-    document.addEventListener('touchend', tryFs, true);
   })();
 </script>
-<!-- ===== /PWA & Fullscreen bootstrap ===== -->
+<!-- ===== /PWA & Fullscreen ===== -->
 
 </body>
 </html>
