@@ -148,7 +148,10 @@
 
 <div id="frame"></div>
 
+<!-- เพิ่มปุ่ม Undo / Redo ทางซ้ายของ Clear ตามสเปค -->
 <div class="clear-btn">
+  <button id="undo-btn" style="width: 52px" onclick="__undo()">↶</button>
+  <button id="redo-btn" style="width: 52px" onclick="__redo()">↷</button>
   <button style="width: 100%" onclick="clearAll()">Clear</button>
   <button id="lock-btn" class="unlocked" onclick="toggleLock()">🔓</button>
 </div>
@@ -399,9 +402,8 @@
   });
 </script>
 
-<!-- ====================== เพิ่มเฉพาะ “หน้าต่างยืนยันล้างข้อมูล” ====================== -->
+<!-- ====================== ยืนยันล้างข้อมูล (จากเวอร์ชัน 1.1) ====================== -->
 <style>
-  /* ใช้เฉพาะในโมดอล: ตัวเลือกเจาะจงด้วย #confirm-clear และ .cc-* เท่านั้น */
   #confirm-clear {
     position: fixed;
     inset: 0;
@@ -430,7 +432,6 @@
     display:flex; gap:10px; justify-content:flex-end; align-items:center;
     padding:10px 16px 16px;
   }
-  /* ปุ่มในโมดอล (กว้างพอดีข้อความ) */
   #confirm-clear .cc-btn {
     appearance:none; border:0; border-radius:12px;
     padding:8px 14px; font-size:14px; line-height:1.3; cursor:pointer;
@@ -444,7 +445,6 @@
   #confirm-clear .cc-btn.primary:active { transform: translateY(1px); }
 </style>
 
-<!-- Modal HTML -->
 <div id="confirm-clear" onclick="__dismissConfirmClear(event)">
   <div class="cc-modal" role="dialog" aria-modal="true" aria-labelledby="cc-title">
     <div class="cc-head" id="cc-title">ล้างข้อมูลทั้งหมด?</div>
@@ -457,7 +457,7 @@
 </div>
 
 <script>
-  /* หุ้ม clearAll เดิม (ไม่แก้ตรรกะเดิม) */
+  /* หุ้ม clearAll เดิม (ไม่แก้ตรรกะเดิม) + เตรียม undo/redo wrap ภายหลัง */
   (function () {
     if (typeof window.clearAll !== 'function') return;
 
@@ -467,7 +467,6 @@
       const ov = document.getElementById('confirm-clear');
       if (!ov) return;
       ov.style.display = 'flex';
-      // กัน scroll พื้นหลังเฉพาะตอนเปิดโมดอล
       document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
     }
@@ -483,15 +482,13 @@
     }
     function __confirmClear() {
       __hideConfirmClear();
-      __clearAllOriginal(); // เรียกฟังก์ชันเดิมจริง ๆ เมื่อยืนยัน
+      __clearAllOriginal(); // ล้างจริงเมื่อยืนยัน
     }
 
-    // ให้ HTML เรียกใช้ได้
     window.__hideConfirmClear = __hideConfirmClear;
     window.__dismissConfirmClear = __dismissConfirmClear;
     window.__confirmClear = __confirmClear;
 
-    // รองรับคีย์บอร์ด
     document.addEventListener('keydown', function (ev) {
       const ov = document.getElementById('confirm-clear');
       if (!ov || ov.style.display !== 'flex') return;
@@ -499,11 +496,112 @@
       if (ev.key === 'Enter') __confirmClear();
     });
 
-    // แทนที่ clearAll ให้เปิดหน้าต่างยืนยันแทน (กด “ยืนยัน” ค่อยล้างจริง)
     window.clearAll = function () { __showConfirmClear(); };
   })();
 </script>
-<!-- ====================== /เพิ่มเฉพาะ “หน้าต่างยืนยันล้างข้อมูล” ====================== -->
+<!-- ====================== /ยืนยันล้างข้อมูล (1.1) ====================== -->
+
+<!-- ====================== เพิ่ม Undo/Redo (1.2) ====================== -->
+<script>
+  (function () {
+    const MAX_HISTORY = 20;
+    let __history = [];
+    let __future = [];
+    let __isRestoring = false;
+
+    function __snapshot() {
+      // เก็บ values และ transfer ปัจจุบัน
+      const snap = {
+        values: {},
+        transfer: document.getElementById("transfer").value
+      };
+      for (const k in prices) snap.values[k] = values[k] || 0;
+      return snap;
+    }
+
+    function __applyState(state) {
+      __isRestoring = true;
+      // set values + inputs + mul
+      for (const k in prices) {
+        values[k] = state.values[k] || 0;
+        const el = document.getElementById(k);
+        if (el) {
+          el.value = values[k];
+          const mulEl = document.getElementById(k + "_mul");
+          if (mulEl) mulEl.innerText = (values[k] * prices[k]).toLocaleString();
+        }
+      }
+      // set transfer
+      const t = document.getElementById("transfer");
+      if (t) t.value = state.transfer || "0";
+      // update sums
+      if (typeof updateTotal === 'function') updateTotal();
+      if (typeof updateFeeAndDiff === 'function') updateFeeAndDiff();
+      if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
+      __isRestoring = false;
+    }
+
+    function __pushHistory() {
+      if (__isRestoring) return;
+      const snap = __snapshot();
+      __history.push(snap);
+      if (__history.length > MAX_HISTORY) __history.shift();
+      // การทำงานใหม่ทำให้อนาคตเป็นโมฆะ
+      __future.length = 0;
+    }
+
+    // เริ่มต้นเก็บสถานะเริ่ม
+    window.addEventListener('load', function () {
+      __pushHistory();
+    });
+
+    // หุ้มฟังก์ชันที่เปลี่ยนสถานะให้เก็บประวัติ (โดยไม่แก้เนื้อใน)
+    function __wrap(fnName) {
+      const fn = window[fnName];
+      if (typeof fn !== 'function') return;
+      window[fnName] = function (...args) {
+        __pushHistory();
+        return fn.apply(this, args);
+      };
+    }
+    __wrap('changeValue');
+    __wrap('clearValue');
+    __wrap('onValueChange');
+    __wrap('numpadPress');
+    __wrap('deleteLastChar');
+
+    // clearAll จะถูกเรียกผ่าน __confirmClear อยู่แล้ว -> หุ้ม __confirmClear เพื่อเก็บประวัติ
+    if (typeof window.__confirmClear === 'function') {
+      const prevConfirm = window.__confirmClear;
+      window.__confirmClear = function () {
+        __pushHistory();   // เก็บสถานะก่อนล้าง
+        return prevConfirm();
+      };
+    }
+
+    // ปุ่ม Undo/Redo
+    window.__undo = function () {
+      if (__history.length === 0) return;
+      const current = __snapshot();
+      const prev = __history.pop();
+      if (!prev) return;
+      __future.push(current);
+      if (__future.length > MAX_HISTORY) __future.shift();
+      __applyState(prev);
+    };
+
+    window.__redo = function () {
+      if (__future.length === 0) return;
+      const current = __snapshot();
+      const next = __future.pop();
+      if (!next) return;
+      __history.push(current);
+      if (__history.length > MAX_HISTORY) __history.shift();
+      __applyState(next);
+    };
+  })();
+</script>
+<!-- ====================== /เพิ่ม Undo/Redo (1.2) ====================== -->
 
 </body>
 </html>
