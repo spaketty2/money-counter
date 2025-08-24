@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>นับเงิน + คีย์บอร์ดเสมือน</title>
 
-  <!-- PWA (1.3) -->
+  <!-- PWA (เดิมจากรอบก่อน) -->
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#3a3a3a">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,7 +14,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
   <style>
-    /* [คงเดิม] ... */
+    /* [คงเดิมทั้งหมด] */
     * { user-select: none; -webkit-user-select: none; -ms-user-select: none; }
     html, body {
       height: 100%;
@@ -32,123 +32,46 @@
       justify-content: flex-start;
     }
     #frame { flex: 1 1 auto; overflow-y: auto; }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      margin: 2px 0;
-    }
+    .row { display: flex; flex-wrap: wrap; align-items: center; margin: 2px 0; }
     button {
-      background: #4c4c4c;
-      color: #ffffff;
-      border: none;
-      padding: 10px 0;
-      margin: 1px;
-      font-size: 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      width: 38px;
+      background: #4c4c4c; color: #ffffff; border: none; padding: 10px 0; margin: 1px;
+      font-size: 12px; border-radius: 4px; cursor: pointer; width: 38px;
     }
     button:active { background: #00aaff; }
     input[type="text"] {
-      background: #5c5c5c;
-      color: #ffffff;
-      border: none;
-      text-align: center;
-      font-size: 12px;
-      padding: 10px;
-      border-radius: 4px;
-      margin: 1px;
-      width: 46px;
+      background: #5c5c5c; color: #ffffff; border: none; text-align: center; font-size: 12px;
+      padding: 10px; border-radius: 4px; margin: 1px; width: 46px;
     }
     .label { flex: 0 0 36px; text-align: center; font-size: 12px; }
-    .multiply {
-      flex: 1;
-      text-align: right;
-      font-size: 12px;
-      padding-right: 6px;
-      min-width: 40px;
-    }
-    .clear-btn {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 8px 0;
-    }
+    .multiply { flex: 1; text-align: right; font-size: 12px; padding-right: 6px; min-width: 40px; }
+    .clear-btn { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
     .sum-section, .floating-label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: bold;
-      font-size: 14px;
-      margin: 6px 0;
-      flex-wrap: wrap;
+      display: flex; justify-content: space-between; align-items: center;
+      font-weight: bold; font-size: 14px; margin: 6px 0; flex-wrap: wrap;
     }
     .floating-label input {
-      width: 100px;
-      font-size: 14px;
-      text-align: right;
-      padding: 10px;
-      background: #5c5c5c;
-      color: #ffffff;
-      border: none;
-      border-radius: 4px;
-      margin-left: 8px;
+      width: 100px; font-size: 14px; text-align: right; padding: 10px;
+      background: #5c5c5c; color: #ffffff; border: none; border-radius: 4px; margin-left: 8px;
     }
-    .green {
-      color: #00ff88;
-      min-width: 60px;
-      text-align: right;
-    }
+    .green { color: #00ff88; min-width: 60px; text-align: right; }
     #numpad-container {
-      position: fixed;
-      bottom: 0;
-      right: 0;
-      width: 60%;
-      height: auto;
-      z-index: 9999;
-      background: transparent;
-      display: none;
+      position: fixed; bottom: 0; right: 0; width: 60%; height: auto; z-index: 9999;
+      background: transparent; display: none;
     }
     #numpad-display {
-      text-align: right;
-      font-size: 18px;
-      padding: 10px 14px;
-      background: #111;
-      color: #00ff88;
+      text-align: right; font-size: 18px; padding: 10px 14px; background: #111; color: #00ff88;
       border-top-left-radius: 10px;
     }
-    #numpad {
-      background: #222;
-      display: none;
-      padding: 10px;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
-    }
-    .numpad-row {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 6px;
-    }
+    #numpad { background: #222; display: none; padding: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.5); }
+    .numpad-row { display: flex; justify-content: center; margin-bottom: 6px; }
     .numpad-btn {
-      width: 50px;
-      height: 50px;
-      margin: 3px;
-      font-size: 20px;
-      border: none;
-      border-radius: 8px;
-      background: #444;
-      color: #fff;
-      cursor: pointer;
+      width: 50px; height: 50px; margin: 3px; font-size: 20px; border: none; border-radius: 8px;
+      background: #444; color: #fff; cursor: pointer;
     }
     .numpad-btn:active { background: #00aaff; }
 
-    /* ปุ่มล็อค */
-    #lock-btn {
-      font-size: 13px;
-      height: 34px;
-      width: 70px;
-      margin-left: 1px;
-    }
+    /* ปุ่มล็อค (เดิม) */
+    #lock-btn { font-size: 13px; height: 34px; width: 70px; margin-left: 1px; }
     .locked { color: yellow; }
     .unlocked { color: white; }
   </style>
@@ -157,7 +80,6 @@
 
 <div id="frame"></div>
 
-<!-- Undo / Redo / Clear / Full / Lock -->
 <div class="clear-btn">
   <button id="undo-btn" style="width: 58px" onclick="__undo()"> Undo </button>
   <button id="redo-btn" style="width: 58px" onclick="__redo()"> Redo </button>
@@ -167,8 +89,7 @@
 </div>
 
 <div class="sum-section">
-  <div>รวม</div>
-  <div id="total-sum" class="green">0</div>
+  <div>รวม</div><div id="total-sum" class="green">0</div>
 </div>
 
 <div class="floating-label">
@@ -177,13 +98,11 @@
 </div>
 
 <div class="sum-section">
-  <div>รวมค่าธรรมเนียม</div>
-  <div id="total-fee" class="green">0</div>
+  <div>รวมค่าธรรมเนียม</div><div id="total-fee" class="green">0</div>
 </div>
 
 <div class="sum-section">
-  <div>ขาดเหลือ</div>
-  <div id="total-diff" class="green">0</div>
+  <div>ขาดเหลือ</div><div id="total-diff" class="green">0</div>
 </div>
 
 <div style="margin-bottom: 80px"></div>
@@ -215,246 +134,99 @@
 </div>
 
 <script>
+  /* ====== โค้ดหลัก (คงเดิมทั้งหมด) ====== */
   let isLocked = false;
 
-  const prices = {
-    bn1000: 1000, bn500: 500, bn100: 100, bn50: 50, bn20: 20,
-    c10: 10, c5: 5, c2: 2, c1: 1, p100: 100, n: 1
-  };
-  const values = {};
-  for (let k in prices) values[k] = 0;
+  const prices = { bn1000:1000, bn500:500, bn100:100, bn50:50, bn20:20, c10:10, c5:5, c2:2, c1:1, p100:100, n:1 };
+  const values = {}; for (let k in prices) values[k] = 0;
 
-  function lockCheck(callback) {
-    return function (...args) {
-      if (!isLocked) callback(...args);
-    }
-  }
+  function lockCheck(cb){ return function(...args){ if(!isLocked) cb(...args); } }
 
-  function createRow(key, label) {
-    const frame = document.getElementById("frame");
-    const row = document.createElement("div");
-    row.className = "row";
-    row.innerHTML =
+  function createRow(key,label){
+    const frame=document.getElementById("frame");
+    const row=document.createElement("div");
+    row.className="row";
+    row.innerHTML=
       `<div class="multiply" id="${key}_mul">0</div>
-      <button onclick="lockCheck(clearValue)('${key}')">C</button>
-      <button onclick="lockCheck(changeValue)('${key}', -1)">-1</button>
-      <div class="label">${label}</div>
-      <input type="text" id="${key}" value="0" inputmode="numeric"
-             onfocus="lockCheck(onFocusIn)(this)" onblur="lockCheck(onFocusOut)(this, '${key}')"
-             oninput="lockCheck(onValueChange)(this, '${key}')" 
-             onkeypress="return isNumberKey(event)">
-      <button onclick="lockCheck(changeValue)('${key}', 1)">+1</button>
-      <button onclick="lockCheck(changeValue)('${key}', 10)">+10</button>`;
+       <button onclick="lockCheck(clearValue)('${key}')">C</button>
+       <button onclick="lockCheck(changeValue)('${key}', -1)">-1</button>
+       <div class="label">${label}</div>
+       <input type="text" id="${key}" value="0" inputmode="numeric"
+              onfocus="lockCheck(onFocusIn)(this)" onblur="lockCheck(onFocusOut)(this, '${key}')"
+              oninput="lockCheck(onValueChange)(this, '${key}')" onkeypress="return isNumberKey(event)">
+       <button onclick="lockCheck(changeValue)('${key}', 1)">+1</button>
+       <button onclick="lockCheck(changeValue)('${key}', 10)">+10</button>`;
     frame.appendChild(row);
   }
 
-  function toggleLock() {
-    isLocked = !isLocked;
-    const lockBtn = document.getElementById("lock-btn");
-    lockBtn.innerText = isLocked ? 'Lock' : 'Unlock';
-    lockBtn.className = isLocked ? 'locked' : 'unlocked';
+  function toggleLock(){
+    isLocked=!isLocked;
+    const lockBtn=document.getElementById("lock-btn");
+    lockBtn.innerText=isLocked?'Lock':'Unlock';
+    lockBtn.className=isLocked?'locked':'unlocked';
   }
 
-  function isNumberKey(evt) {
-    if (isLocked) return false;
-    const charCode = evt.which ? evt.which : evt.keyCode;
-    return charCode >= 48 && charCode <= 57;
+  function isNumberKey(evt){ if(isLocked) return false; const c=evt.which?evt.which:evt.keyCode; return c>=48&&c<=57; }
+
+  function changeValue(key,delta){ values[key]=Math.max(values[key]+delta,0); document.getElementById(key).value=values[key]; updateMultiply(key); saveToLocalStorage(); }
+  function clearValue(key){ values[key]=0; document.getElementById(key).value=0; updateMultiply(key); saveToLocalStorage(); }
+  function updateMultiply(key){ let mul=prices[key]*values[key]; document.getElementById(key+"_mul").innerText=mul.toLocaleString(); updateTotal(); }
+  function updateTotal(){ let total=Object.keys(prices).reduce((s,k)=>s+prices[k]*values[k],0); document.getElementById("total-sum").innerText=total.toLocaleString(); updateFeeAndDiff(); }
+
+  function clearAll(){
+    if(isLocked) return;
+    for(let k in prices) clearValue(k);
+    document.getElementById("transfer").value='0';
+    document.getElementById("numpad-display").innerText='0';
+    hideNumpad(); updateFeeAndDiff(); saveToLocalStorage();
   }
 
-  function changeValue(key, delta) {
-    values[key] = Math.max(values[key] + delta, 0);
-    document.getElementById(key).value = values[key];
-    updateMultiply(key);
-    saveToLocalStorage();
+  function onFocusIn(input){ if(input.value==="0") input.value=""; input.style.color="#ffffff"; }
+  function onFocusOut(input,key){ if(!input.value){ input.value="0"; input.style.color="#ffffff"; } values[key]=parseInt(input.value)||0; updateMultiply(key); saveToLocalStorage(); }
+  function onValueChange(input,key){ values[key]=Math.max(parseInt(input.value)||0,0); updateMultiply(key); saveToLocalStorage(); }
+
+  function updateFeeAndDiff(){
+    let transfer=parseInt(document.getElementById("transfer").value.replace(/,/g,""))||0;
+    let fee=transfer+15; document.getElementById("total-fee").innerText=fee.toLocaleString();
+    let total=parseInt(document.getElementById("total-sum").innerText.replace(/,/g,""))||0;
+    let diff=total-fee; document.getElementById("total-diff").innerText=diff.toLocaleString();
   }
 
-  function clearValue(key) {
-    values[key] = 0;
-    document.getElementById(key).value = 0;
-    updateMultiply(key);
-    saveToLocalStorage();
+  const labels={ bn1000:'1000', bn500:'500', bn100:'100', bn50:'50', bn20:'20', c10:'10', c5:'5', c2:'2', c1:'1', p100:'100', n:'...' };
+  for (let k in labels) createRow(k,labels[k]);
+
+  function showNumpad(){ if(isLocked) return; document.getElementById('numpad').style.display='block'; document.getElementById('numpad-container').style.display='block'; document.getElementById('numpad-display').innerText=document.getElementById('transfer').value; }
+  function hideNumpad(){ document.getElementById('numpad').style.display='none'; document.getElementById('numpad-container').style.display='none'; updateFeeAndDiff(); }
+  function numpadPress(num){ if(isLocked) return; let input=document.getElementById('transfer'); let cur=input.value.replace(/,/g,''); if(cur==='0') cur=''; input.value=formatNumber(cur+num); document.getElementById('numpad-display').innerText=input.value; saveToLocalStorage(); }
+  function deleteLastChar(){ if(isLocked) return; let input=document.getElementById('transfer'); let cur=input.value.replace(/,/g,''); cur=cur.slice(0,-1); input.value=formatNumber(cur||'0'); document.getElementById('numpad-display').innerText=input.value; saveToLocalStorage(); }
+  function formatNumber(v){ let n=parseInt(v); return isNaN(n)?'0':n.toLocaleString(); }
+  function saveToLocalStorage(){ localStorage.setItem("values",JSON.stringify(values)); localStorage.setItem("transfer",document.getElementById("transfer").value); }
+  function loadFromLocalStorage(){
+    const sv=localStorage.getItem("values"), st=localStorage.getItem("transfer");
+    if(sv){ const p=JSON.parse(sv); for(let k in p){ values[k]=p[k]; const el=document.getElementById(k); if(el){ el.value=p[k]; updateMultiply(k); } } }
+    if(st){ document.getElementById("transfer").value=st; updateFeeAndDiff(); }
   }
-
-  function updateMultiply(key) {
-    let mul = prices[key] * values[key];
-    document.getElementById(key + "_mul").innerText = mul.toLocaleString();
-    updateTotal();
-  }
-
-  function updateTotal() {
-    let total = Object.keys(prices).reduce((sum, k) => sum + prices[k] * values[k], 0);
-    document.getElementById("total-sum").innerText = total.toLocaleString();
-    updateFeeAndDiff();
-  }
-
-  function clearAll() {
-    if (isLocked) return;
-    for (let k in prices) clearValue(k);
-    document.getElementById("transfer").value = '0';
-    document.getElementById("numpad-display").innerText = '0';
-    hideNumpad();
-    updateFeeAndDiff();
-    saveToLocalStorage();
-  }
-
-  function onFocusIn(input) {
-    if (input.value === "0") input.value = "";
-    input.style.color = "#ffffff";
-  }
-
-  function onFocusOut(input, key) {
-    if (!input.value) {
-      input.value = "0";
-      input.style.color = "#ffffff";
-    }
-    values[key] = parseInt(input.value) || 0;
-    updateMultiply(key);
-    saveToLocalStorage();
-  }
-
-  function onValueChange(input, key) {
-    values[key] = Math.max(parseInt(input.value) || 0, 0);
-    updateMultiply(key);
-    saveToLocalStorage();
-  }
-
-  function updateFeeAndDiff() {
-    let transfer = parseInt(document.getElementById("transfer").value.replace(/,/g, "")) || 0;
-    let fee = transfer + 15;
-    document.getElementById("total-fee").innerText = fee.toLocaleString();
-    let total = parseInt(document.getElementById("total-sum").innerText.replace(/,/g, "")) || 0;
-    let diff = total - fee;
-    document.getElementById("total-diff").innerText = diff.toLocaleString();
-  }
-
-  const labels = {
-    bn1000: '1000', bn500: '500', bn100: '100', bn50: '50', bn20: '20',
-    c10: '10', c5: '5', c2: '2', c1: '1', p100: '100', n: '...'
-  };
-  for (let k in labels) createRow(k, labels[k]);
-
-  function showNumpad() {
-    if (isLocked) return;
-    document.getElementById('numpad').style.display = 'block';
-    document.getElementById('numpad-container').style.display = 'block';
-    document.getElementById('numpad-display').innerText = document.getElementById('transfer').value;
-  }
-
-  function hideNumpad() {
-    document.getElementById('numpad').style.display = 'none';
-    document.getElementById('numpad-container').style.display = 'none';
-    updateFeeAndDiff();
-  }
-
-  function numpadPress(num) {
-    if (isLocked) return;
-    let input = document.getElementById('transfer');
-    let current = input.value.replace(/,/g, '');
-    if (current === '0') current = '';
-    input.value = formatNumber(current + num);
-    document.getElementById('numpad-display').innerText = input.value;
-    saveToLocalStorage();
-  }
-
-  function deleteLastChar() {
-    if (isLocked) return;
-    let input = document.getElementById('transfer');
-    let current = input.value.replace(/,/g, '');
-    current = current.slice(0, -1);
-    input.value = formatNumber(current || '0');
-    document.getElementById('numpad-display').innerText = input.value;
-    saveToLocalStorage();
-  }
-
-  function formatNumber(val) {
-    let num = parseInt(val);
-    return isNaN(num) ? '0' : num.toLocaleString();
-  }
-
-  function saveToLocalStorage() {
-    localStorage.setItem("values", JSON.stringify(values));
-    localStorage.setItem("transfer", document.getElementById("transfer").value);
-  }
-
-  function loadFromLocalStorage() {
-    const storedValues = localStorage.getItem("values");
-    const storedTransfer = localStorage.getItem("transfer");
-    if (storedValues) {
-      const parsed = JSON.parse(storedValues);
-      for (let k in parsed) {
-        values[k] = parsed[k];
-        const el = document.getElementById(k);
-        if (el) {
-          el.value = parsed[k];
-          updateMultiply(k);
-        }
-      }
-    }
-    if (storedTransfer) {
-      document.getElementById("transfer").value = storedTransfer;
-      updateFeeAndDiff();
-    }
-  }
-
-  window.onload = function () {
-    loadFromLocalStorage();
-  };
-
-  document.addEventListener("click", function (event) {
-    const numpadContainer = document.getElementById("numpad-container");
-    const transferInput = document.getElementById("transfer");
-    if (
-      !numpadContainer.contains(event.target) &&
-      event.target !== transferInput
-    ) {
-      hideNumpad();
-    }
+  window.onload=function(){ loadFromLocalStorage(); };
+  document.addEventListener("click",function(e){
+    const nc=document.getElementById("numpad-container"); const ti=document.getElementById("transfer");
+    if(!nc.contains(e.target) && e.target!==ti){ hideNumpad(); }
   });
 </script>
 
-<!-- ===== ยืนยันล้างข้อมูล (1.1) ===== -->
+<!-- ====== ยืนยันล้างข้อมูล (คงเดิมจากรอบก่อน + เช็ค lock) ====== -->
 <style>
-  #confirm-clear {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,.35);
-    z-index: 99999;
-  }
-  #confirm-clear .cc-modal {
-    width: 320px;
-    max-width: calc(100% - 48px);
-    border-radius: 16px;
-    background: #fff;
-    color: #111;
-    box-shadow: 0 12px 36px rgba(0,0,0,.35);
-    overflow: hidden;
-    font-family: inherit;
-  }
-  @media (prefers-color-scheme: dark) {
-    #confirm-clear .cc-modal { background:#1f1f1f; color:#f5f5f5; }
-  }
-  #confirm-clear .cc-head { font-weight:700; padding:16px 16px 8px; font-size:16px; }
-  #confirm-clear .cc-body { padding:0 16px 12px; font-size:14px; opacity:.95; }
-  #confirm-clear .cc-actions {
-    display:flex; gap:10px; justify-content:flex-end; align-items:center;
-    padding:10px 16px 16px;
-  }
-  #confirm-clear .cc-btn {
-    appearance:none; border:0; border-radius:12px;
-    padding:8px 14px; font-size:14px; line-height:1.3; cursor:pointer;
-    width:auto; display:inline-block; white-space:nowrap;
-  }
-  #confirm-clear .cc-btn.outline { background:transparent; border:1px solid rgba(0,0,0,.25); }
-  @media (prefers-color-scheme: dark) {
-    #confirm-clear .cc-btn.outline { border-color: rgba(255,255,255,.35); }
-  }
-  #confirm-clear .cc-btn.primary { background:#1a73e8; color:#fff; }
-  #confirm-clear .cc-btn.primary:active { transform: translateY(1px); }
+  #confirm-clear{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.35); z-index:99999; }
+  #confirm-clear .cc-modal{ width:320px; max-width:calc(100% - 48px); border-radius:16px; background:#fff; color:#111; box-shadow:0 12px 36px rgba(0,0,0,.35); overflow:hidden; font-family:inherit; }
+  @media (prefers-color-scheme: dark){ #confirm-clear .cc-modal{ background:#1f1f1f; color:#f5f5f5; } }
+  #confirm-clear .cc-head{ font-weight:700; padding:16px 16px 8px; font-size:16px; }
+  #confirm-clear .cc-body{ padding:0 16px 12px; font-size:14px; opacity:.95; }
+  #confirm-clear .cc-actions{ display:flex; gap:10px; justify-content:flex-end; align-items:center; padding:10px 16px 16px; }
+  #confirm-clear .cc-btn{ appearance:none; border:0; border-radius:12px; padding:8px 14px; font-size:14px; line-height:1.3; cursor:pointer; width:auto; display:inline-block; white-space:nowrap; }
+  #confirm-clear .cc-btn.outline{ background:transparent; border:1px solid rgba(0,0,0,.25); }
+  @media (prefers-color-scheme: dark){ #confirm-clear .cc-btn.outline{ border-color:rgba(255,255,255,.35); } }
+  #confirm-clear .cc-btn.primary{ background:#1a73e8; color:#fff; }
+  #confirm-clear .cc-btn.primary:active{ transform:translateY(1px); }
 </style>
-
 <div id="confirm-clear" onclick="__dismissConfirmClear(event)">
   <div class="cc-modal" role="dialog" aria-modal="true" aria-labelledby="cc-title">
     <div class="cc-head" id="cc-title">ล้างข้อมูลทั้งหมด?</div>
@@ -465,214 +237,131 @@
     </div>
   </div>
 </div>
-
 <script>
-  /* หุ้ม clearAll เดิม + ไม่แสดงยืนยันเมื่อ Lock */
-  (function () {
-    if (typeof window.clearAll !== 'function') return;
-    const __clearAllOriginal = window.clearAll;
-
-    function __showConfirmClear() {
-      const ov = document.getElementById('confirm-clear');
-      if (!ov) return;
-      ov.style.display = 'flex';
-      document.documentElement.style.overflow = 'hidden';
-      document.body.style.overflow = 'hidden';
-    }
-    function __hideConfirmClear() {
-      const ov = document.getElementById('confirm-clear');
-      if (!ov) return;
-      ov.style.display = 'none';
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-    }
-    function __dismissConfirmClear(e) {
-      if (e.target && e.target.id === 'confirm-clear') __hideConfirmClear();
-    }
-    function __confirmClear() {
-      __hideConfirmClear();
-      __clearAllOriginal();
-    }
-
-    window.__hideConfirmClear = __hideConfirmClear;
-    window.__dismissConfirmClear = __dismissConfirmClear;
-    window.__confirmClear = __confirmClear;
-
-    document.addEventListener('keydown', function (ev) {
-      const ov = document.getElementById('confirm-clear');
-      if (!ov || ov.style.display !== 'flex') return;
-      if (ev.key === 'Escape') __hideConfirmClear();
-      if (ev.key === 'Enter') __confirmClear();
-    });
-
-    // ใช้ตัวแปร isLocked โดยตรง (ไม่ผ่าน window.)
-    window.clearAll = function () {
-      if (isLocked) return;         // Lock: ไม่เปิด modal
-      __showConfirmClear();
-    };
+  (function(){
+    if(typeof window.clearAll!=='function') return;
+    const __clearAllOriginal=window.clearAll;
+    function __showConfirmClear(){ const ov=document.getElementById('confirm-clear'); if(!ov) return; ov.style.display='flex'; document.documentElement.style.overflow='hidden'; document.body.style.overflow='hidden'; }
+    function __hideConfirmClear(){ const ov=document.getElementById('confirm-clear'); if(!ov) return; ov.style.display='none'; document.documentElement.style.overflow=''; document.body.style.overflow=''; }
+    function __dismissConfirmClear(e){ if(e.target && e.target.id==='confirm-clear') __hideConfirmClear(); }
+    function __confirmClear(){ __hideConfirmClear(); __clearAllOriginal(); }
+    window.__hideConfirmClear=__hideConfirmClear; window.__dismissConfirmClear=__dismissConfirmClear; window.__confirmClear=__confirmClear;
+    document.addEventListener('keydown',function(ev){ const ov=document.getElementById('confirm-clear'); if(!ov||ov.style.display!=='flex') return; if(ev.key==='Escape') __hideConfirmClear(); if(ev.key==='Enter') __confirmClear(); });
+    window.clearAll=function(){ if(isLocked) return; __showConfirmClear(); };
   })();
 </script>
-<!-- ===== /ยืนยันล้างข้อมูล ===== -->
 
-<!-- ===== Undo/Redo (1.2) ===== -->
+<!-- ====== Undo/Redo (คงเดิมจาก 1.2 และเช็ค lock) ====== -->
 <script>
-  (function () {
-    const MAX_HISTORY = 20;
-    let __history = [];
-    let __future = [];
-    let __isRestoring = false;
-
-    function __snapshot() {
-      const snap = { values: {}, transfer: document.getElementById("transfer").value };
-      for (const k in prices) snap.values[k] = values[k] || 0;
-      return snap;
-    }
-
-    function __applyState(state) {
-      __isRestoring = true;
-      for (const k in prices) {
-        values[k] = state.values[k] || 0;
-        const el = document.getElementById(k);
-        if (el) {
-          el.value = values[k];
-          const mulEl = document.getElementById(k + "_mul");
-          if (mulEl) mulEl.innerText = (values[k] * prices[k]).toLocaleString();
-        }
-      }
-      const t = document.getElementById("transfer");
-      if (t) t.value = state.transfer || "0";
-      if (typeof updateTotal === 'function') updateTotal();
-      if (typeof updateFeeAndDiff === 'function') updateFeeAndDiff();
-      if (typeof saveToLocalStorage === 'function') saveToLocalStorage();
-      __isRestoring = false;
-    }
-
-    function __pushHistory() {
-      if (__isRestoring) return;
-      const snap = __snapshot();
-      __history.push(snap);
-      if (__history.length > MAX_HISTORY) __history.shift();
-      __future.length = 0;
-    }
-
-    window.addEventListener('load', function () { __pushHistory(); });
-
-    function __wrap(fnName) {
-      const fn = window[fnName];
-      if (typeof fn !== 'function') return;
-      window[fnName] = function (...args) {
-        __pushHistory();
-        return fn.apply(this, args);
-      };
-    }
-    __wrap('changeValue');
-    __wrap('clearValue');
-    __wrap('onValueChange');
-    __wrap('numpadPress');
-    __wrap('deleteLastChar');
-
-    if (typeof window.__confirmClear === 'function') {
-      const prevConfirm = window.__confirmClear;
-      window.__confirmClear = function () {
-        __pushHistory();
-        return prevConfirm();
-      };
-    }
-
-    // Lock แล้วไม่ให้ Undo/Redo ทำงาน
-    window.__undo = function () {
-      if (isLocked) return;
-      if (__history.length === 0) return;
-      const current = __snapshot();
-      const prev = __history.pop();
-      if (!prev) return;
-      __future.push(current);
-      if (__future.length > MAX_HISTORY) __future.shift();
-      __applyState(prev);
-    };
-
-    window.__redo = function () {
-      if (isLocked) return;
-      if (__future.length === 0) return;
-      const current = __snapshot();
-      const next = __future.pop();
-      if (!next) return;
-      __history.push(current);
-      if (__history.length > MAX_HISTORY) __history.shift();
-      __applyState(next);
-    };
+  (function(){
+    const MAX_HISTORY=20; let __history=[]; let __future=[]; let __isRestoring=false;
+    function __snapshot(){ const snap={values:{},transfer:document.getElementById("transfer").value}; for(const k in prices) snap.values[k]=values[k]||0; return snap; }
+    function __applyState(st){ __isRestoring=true; for(const k in prices){ values[k]=st.values[k]||0; const el=document.getElementById(k); if(el){ el.value=values[k]; const m=document.getElementById(k+"_mul"); if(m) m.innerText=(values[k]*prices[k]).toLocaleString(); } } const t=document.getElementById("transfer"); if(t) t.value=st.transfer||"0"; if(typeof updateTotal==='function') updateTotal(); if(typeof updateFeeAndDiff==='function') updateFeeAndDiff(); if(typeof saveToLocalStorage==='function') saveToLocalStorage(); __isRestoring=false; }
+    function __pushHistory(){ if(__isRestoring) return; const s=__snapshot(); __history.push(s); if(__history.length>MAX_HISTORY) __history.shift(); __future.length=0; }
+    window.addEventListener('load',()=>{ __pushHistory(); });
+    function __wrap(name){ const fn=window[name]; if(typeof fn!=='function') return; window[name]=function(...args){ __pushHistory(); return fn.apply(this,args); }; }
+    __wrap('changeValue'); __wrap('clearValue'); __wrap('onValueChange'); __wrap('numpadPress'); __wrap('deleteLastChar');
+    if(typeof window.__confirmClear==='function'){ const prev=window.__confirmClear; window.__confirmClear=function(){ __pushHistory(); return prev(); }; }
+    window.__undo=function(){ if(isLocked) return; if(__history.length===0) return; const cur=__snapshot(); const prev=__history.pop(); if(!prev) return; __future.push(cur); if(__future.length>MAX_HISTORY) __future.shift(); __applyState(prev); };
+    window.__redo=function(){ if(isLocked) return; if(__future.length===0) return; const cur=__snapshot(); const next=__future.pop(); if(!next) return; __history.push(cur); if(__history.length>MAX_HISTORY) __history.shift(); __applyState(next); };
   })();
 </script>
-<!-- ===== /Undo/Redo ===== -->
 
-<!-- ===== PWA & Fullscreen (1.3) + แก้ช่องว่างกลางจอ ===== -->
+<!-- ====== PWA & Fullscreen + แก้ช่องว่าง (อัปเดต) ====== -->
 <script>
-  // ลงทะเบียน Service Worker
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(()=>{});
-    });
+  // ลงทะเบียน SW (เหมือนเดิม)
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
   }
 
-  // ปุ่มสลับ Full/Exit + จัดระยะ #frame
-  (function () {
-    const SPACER_SELECTOR = 'div[style*="margin-bottom: 80px"]';
+  (function(){
+    const SPACER_SELECTOR='div[style*="margin-bottom: 80px"]';
+    let __nudgeTimer=null;
 
-    // ปรับ padding บน/ล่างของ #frame:
-    //   - ส่วนเกินเนื้อหา (extra) จะไปกอง "บน" เป็นหลัก
-    //   - ด้านล่างเหลือแค่ระยะหายใจเล็กน้อย (6px) เพื่อชน Clear
-    function adjustFramePadding() {
-      const frame = document.getElementById('frame');
-      if (!frame) return;
-      frame.style.paddingTop = '';
-      frame.style.paddingBottom = '';
-      const boxH = frame.clientHeight;
-      const contentH = frame.scrollHeight;
-      const extra = Math.max(boxH - contentH, 0);
-      const bottomPad = Math.min(6, extra);           // ชิดแถว Clear
-      const topPad = Math.max(extra - bottomPad, 0);  // ที่เหลือไปด้านบน
-      frame.style.paddingTop = topPad + 'px';
-      frame.style.paddingBottom = bottomPad + 'px';
+    // ปรับ padding ของ #frame ให้ "ส่วนเกิน" ไปกองด้านบน และด้านล่างเหลือ ~6px
+    function adjustFramePadding(){
+      const frame=document.getElementById('frame'); if(!frame) return;
+
+      // ล้างก่อนวัด เพื่อไม่ให้ padding เดิมปนการคำนวณ
+      const prevPT=frame.style.paddingTop, prevPB=frame.style.paddingBottom;
+      frame.style.paddingTop='0px'; frame.style.paddingBottom='0px';
+
+      const boxH=frame.clientHeight;          // ความสูงกล่อง
+      const contentH=frame.scrollHeight;      // ความสูงเนื้อหา (ไม่รวม padding เพราะเราตั้งเป็น 0 แล้ว)
+      const extra=Math.max(boxH - contentH, 0);
+
+      const bottomPad=Math.min(6, extra);     // ชิดแถว Clear (เหลือหายใจ 6px)
+      const topPad=Math.max(extra - bottomPad, 0);
+
+      frame.style.paddingTop=topPad+'px';
+      frame.style.paddingBottom=bottomPad+'px';
     }
 
-    function setSpacer(isFull) {
-      const sp = document.querySelector(SPACER_SELECTOR);
-      if (sp) sp.style.marginBottom = isFull ? '12px' : '80px';
+    function setSpacer(isFull){
+      const sp=document.querySelector(SPACER_SELECTOR);
+      if(sp) sp.style.marginBottom=isFull?'12px':'80px';
     }
 
-    function isStandalone() {
+    function isStandalone(){
       return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
     }
 
-    function updateUI() {
-      const full = !!document.fullscreenElement || isStandalone();
-      const btn = document.getElementById('fs-btn');
-      if (btn) btn.textContent = full ? 'Exit' : 'Full';
+    function updateUI(){
+      const full=!!document.fullscreenElement || isStandalone();
+      const btn=document.getElementById('fs-btn'); if(btn) btn.textContent=full?'Exit':'Full';
       setSpacer(full);
-      requestAnimationFrame(adjustFramePadding);
+
+      // คำนวณทันที + นัดกระตุกเลย์เอาต์รัว ๆ ช่วงสั้น ๆ กันอาการแถบบราวเซอร์ค่อย ๆ หด/ขยาย
+      adjustFramePadding();
+      if(__nudgeTimer) clearTimeout(__nudgeTimer);
+      // คิวหลายจังหวะ
+      setTimeout(adjustFramePadding, 50);
+      setTimeout(adjustFramePadding, 250);
+      setTimeout(adjustFramePadding, 600);
+      setTimeout(adjustFramePadding, 1200);
+
+      // เฝ้า 1.5s ด้วย requestAnimationFrame
+      const start=performance.now();
+      (function rafLoop(){
+        adjustFramePadding();
+        if(performance.now()-start < 1500) requestAnimationFrame(rafLoop);
+      })();
     }
 
-    // ปุ่ม Full/Exit (ล็อกแล้วไม่ทำงาน)
-    window.__toggleFullscreen = function () {
-      if (isLocked) return;
-      const el = document.documentElement;
-      if (document.fullscreenElement) {
-        if (document.exitFullscreen) document.exitFullscreen();
-      } else if (el.requestFullscreen) {
+    // ปุ่ม Full/Exit (เคารพ lock)
+    window.__toggleFullscreen=function(){
+      if(isLocked) return;
+      const el=document.documentElement;
+      if(document.fullscreenElement){
+        if(document.exitFullscreen) document.exitFullscreen();
+      }else if(el.requestFullscreen){
         el.requestFullscreen().catch(()=>{});
       }
     };
 
+    // อีเวนต์ที่มีผลต่อขนาด viewport จริง ๆ
     window.addEventListener('load', updateUI);
     window.addEventListener('resize', updateUI);
     window.addEventListener('orientationchange', updateUI);
     document.addEventListener('fullscreenchange', updateUI);
-    try {
-      window.matchMedia('(display-mode: standalone)').addEventListener('change', updateUI);
-    } catch(e) {}
+
+    // รองรับ VisualViewport (มือถือจะเปลี่ยนความสูงหลังสักครู่)
+    if(window.visualViewport){
+      visualViewport.addEventListener('resize', updateUI);
+      visualViewport.addEventListener('scroll', updateUI);
+    }
+
+    // เผื่อบางเครื่องที่ไม่ยิงอีเวนต์ใด ๆ เลยหลังเข้าฟูลสกรีน
+    document.addEventListener('click', function(e){
+      // ถ้ากำลังอยู่โหมด Full ให้จิ้มไหนก็ได้แล้วปรับ padding ซ้ำอย่างเบา ๆ
+      if(document.fullscreenElement) {
+        if(__nudgeTimer) clearTimeout(__nudgeTimer);
+        __nudgeTimer=setTimeout(adjustFramePadding, 80);
+      }
+    });
   })();
 </script>
-<!-- ===== /PWA & Fullscreen ===== -->
+<!-- ====== /PWA & Fullscreen ====== -->
 
 </body>
 </html>
