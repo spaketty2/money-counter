@@ -150,10 +150,10 @@
 
 <!-- เพิ่มปุ่ม Undo / Redo ทางซ้ายของ Clear ตามสเปค -->
 <div class="clear-btn">
-  <button id="undo-btn" style="width: 48px" onclick="__undo()"> Undo </button>
-  <button id="redo-btn" style="width: 48px" onclick="__redo()"> Redo </button>
+  <button id="undo-btn" style="width: 52px" onclick="__undo()"> Undo </button>
+  <button id="redo-btn" style="width: 52px" onclick="__redo()"> Redo </button>
   <button style="width: 100%" onclick="clearAll()">Clear</button>
-  <button id="lock-btn" class="unlocked" onclick="toggleLock()">🔓</button>
+  <button id="lock-btn" class="unlocked" style="width: 60px" onclick="toggleLock()">Unlock</button>
 </div>
 
 <div class="sum-section">
@@ -241,7 +241,7 @@
   function toggleLock() {
     isLocked = !isLocked;
     const lockBtn = document.getElementById("lock-btn");
-    lockBtn.innerText = isLocked ? '🔒' : '🔓';
+    lockBtn.innerText = isLocked ? 'Lock' : 'Unlock';
     lockBtn.className = isLocked ? 'locked' : 'unlocked';
   }
 
